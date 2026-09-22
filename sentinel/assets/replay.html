@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ATLAS — See. Understand. Inspect again.</title>
+<style>
+:root{color-scheme:dark;--bg:#0c1116;--panel:#111820;--line:#27323c;--text:#e2e8ec;--muted:#8b9ca8;--cyan:#80d9ca;--amber:#ddb07c;--free:#62998b;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button,select{border:1px solid var(--line);background:#18222b;color:var(--text);border-radius:3px;cursor:pointer}button:hover,select:hover{border-color:#617b87;background:#202e38}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}button{padding:9px 12px}button:disabled{opacity:.4;cursor:default}.shell{max-width:1600px;margin:auto;padding:0 26px 22px}.topbar{height:64px;display:flex;align-items:center;gap:22px;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;font-weight:650;letter-spacing:3px;font-size:16px}.brand svg{width:22px;height:26px}.crumb{color:var(--muted);font-size:12px}.tag{margin-left:auto;border:1px solid #384b53;color:#b3c5cc;font:10px var(--mono);letter-spacing:1px;padding:6px 8px;white-space:nowrap}.tag:before{content:"";display:inline-block;background:var(--cyan);width:5px;height:5px;border-radius:50%;margin-right:8px}.intro{display:flex;gap:24px;align-items:center;padding:24px 0 20px}.eyebrow{font:10px var(--mono);letter-spacing:1.8px;color:var(--cyan);margin-bottom:8px}h1{font-size:27px;letter-spacing:-.7px;font-weight:500;margin:0 0 8px}.intro p{color:var(--muted);margin:0;line-height:1.5;max-width:760px}.metrics{margin-left:auto;display:flex;gap:28px}.metric{min-width:85px}.metric strong{display:block;font:24px var(--mono);font-weight:400;white-space:nowrap}.metric span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.metric:first-child strong{color:var(--cyan)}.stagebar{display:flex;align-items:center;gap:4px;border:1px solid var(--line);padding:11px 16px;background:#10171d;overflow:auto}.stage{display:flex;align-items:center;gap:7px;color:#657884;font-size:12px;white-space:nowrap}.stage em{font:10px var(--mono);font-style:normal;border:1px solid #2b3943;width:21px;height:21px;display:grid;place-items:center;border-radius:50%}.stage.active{color:var(--cyan)}.stage.active em{background:#213d39;border-color:#50867b}.stagearrow{color:#465662;margin:0 12px}.stageinfo{margin-left:auto;color:var(--muted);font:10px var(--mono);letter-spacing:.6px;white-space:nowrap}.workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,1fr);gap:14px;margin-top:14px}.panel{border:1px solid var(--line);background:var(--panel);min-width:0}.panelhead{height:49px;padding:0 16px;display:flex;align-items:center;gap:9px;border-bottom:1px solid #22303a}.panelhead .num{font:10px var(--mono);color:var(--muted)}.panelhead h2{font-size:12px;font-weight:500;margin:0;letter-spacing:.3px}.panelhead .sub{margin-left:auto;font:10px var(--mono);color:var(--muted)}.scene-wrap{position:relative;height:440px;overflow:hidden;background:radial-gradient(ellipse at 50% 60%,#19272f 0%,#111a22 65%,#0f161d 100%)}canvas{display:block;width:100%;height:100%}.scene-wrap canvas{cursor:grab;touch-action:none}.scene-wrap canvas:active{cursor:grabbing}.scene-note{position:absolute;left:15px;top:13px;color:#92a6b1;font:10px var(--mono);line-height:1.6;pointer-events:none}.scene-tools{position:absolute;right:12px;top:10px;display:flex;align-items:center;gap:9px}.scene-tools button{font-size:11px;padding:5px 8px}.scene-tools label{font-size:11px;color:#b2c0c6;display:flex;align-items:center;gap:4px}.scene-tools input{accent-color:var(--cyan)}.key{display:flex;align-items:center;gap:15px;padding:11px 15px;border-top:1px solid #22303a;color:var(--muted);font-size:10px;flex-wrap:wrap}.swatch{display:inline-block;width:8px;height:8px;margin-right:5px;background:#263440;border:1px solid #526171}.swatch.free{background:var(--free);border-color:var(--free)}.swatch.blocked{background:var(--amber);border-color:var(--amber)}.swatch.new{background:transparent;border-color:var(--cyan)}.swatch.ray{width:15px;height:1px;border:none;background:var(--cyan)}.swatch.hidden{height:0;width:15px;border:none;border-top:1px dashed var(--amber)}.mapwrap{position:relative;height:295px;padding:10px 25px;background:#10171d}.mapwrap canvas{height:100%;max-width:100%}.sensor{border-top:1px solid var(--line);display:grid;grid-template-columns:140px 1fr;gap:13px;padding:13px 15px;min-height:145px}.sensor-image{position:relative;height:108px;background:#0c1218;border:1px solid #2a3943;overflow:hidden}.sensor-image canvas{image-rendering:pixelated}.sensor-badge{position:absolute;bottom:4px;left:4px;background:#0a111bd9;padding:3px 4px;font:8px var(--mono);color:#d7e1e7}.sensor-copy .sensor-title{font:10px var(--mono);color:var(--cyan);margin:0 0 7px}.sensor-copy p{margin:0 0 7px;font-size:11px;line-height:1.5;color:var(--muted)}.depth-scale{height:3px;background:linear-gradient(90deg,#edb367,#427184);margin-top:9px}.scale-labels{display:flex;justify-content:space-between;margin-top:4px;color:#95a5ae;font:9px var(--mono)}.explanation{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;padding:17px 19px;background:#14212a;border:1px solid #2d454d;margin-top:14px;min-height:93px}.explain-icon{height:32px;width:32px;display:grid;place-items:center;font:12px var(--mono);border:1px solid #53847d;color:var(--cyan)}.explanation h3{font-size:16px;font-weight:500;letter-spacing:-.2px;margin:0 0 6px}.explanation p{font-size:12px;line-height:1.6;color:#a9b9c3;margin:0;max-width:1050px}.playback{display:flex;align-items:center;gap:12px;margin-top:17px}.play{min-width:112px;background:#d7e9e2;border-color:#d7e9e2;color:#132520;font-size:12px;font-weight:600}.play:hover{background:#e6f3ed;border-color:#e6f3ed}.small{font-size:12px;padding:9px 11px}.time{font:10px var(--mono);color:#b0c0c9;min-width:94px;white-space:nowrap}.scrubber{flex:1;min-width:60px;accent-color:var(--cyan);height:4px;cursor:pointer}.speed{font:11px var(--mono);padding:8px}.footer{margin-top:15px;display:flex;justify-content:space-between;gap:14px;color:#6f8491;font-size:10px;line-height:1.5}.footer details{max-width:720px}.footer summary{cursor:pointer;color:#a4b8c2}.footer details p{line-height:1.7}.footer .record{font-family:var(--mono);white-space:nowrap}.status-pill{color:var(--cyan)!important}.map-annotation{font:10px var(--mono)}
+@media(min-width:1450px){.scene-wrap{height:515px}.mapwrap{height:370px}.intro{padding-top:28px}}
+@media(max-width:1000px){.shell{padding:0 14px 16px}.intro{align-items:flex-start}.metrics{gap:14px}.metric strong{font-size:19px}.metric{min-width:70px}.workspace{grid-template-columns:minmax(0,1.3fr) minmax(290px,1fr)}.scene-wrap{height:410px}.mapwrap{height:265px}.stagearrow{margin:0 6px}.stageinfo{display:none}.sensor{grid-template-columns:115px 1fr}.crumb{display:none}}
+@media(max-width:730px){.intro{display:block;padding:20px 0 16px}h1{font-size:25px}.metrics{margin-top:18px;gap:35px}.workspace{grid-template-columns:1fr}.scene-wrap{height:340px}.mapwrap{height:320px}.sensor{grid-template-columns:140px 1fr}.stagebar{padding:10px}.stage{font-size:10px;gap:4px}.stagearrow{margin:0 4px}.stage em{width:18px;height:18px;font-size:9px}.topbar{height:55px;gap:10px}.tag{font-size:8px;padding:5px}.brand{font-size:14px}.playback{gap:7px;flex-wrap:wrap}.play{min-width:96px}.scrubber{order:10;flex-basis:100%;margin-top:9px}.footer{display:block}.footer .record{display:block;margin-top:10px}.explanation{padding:13px;gap:9px}.explanation h3{font-size:15px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="topbar"><div class="brand"><svg viewBox="0 0 24 28" fill="none" aria-hidden="true"><path d="M12 2 22 7v12l-10 7L2 19V7L12 2Z" stroke="#a9c3c6"/><path d="m6 16 6-8 6 8M9 18h6" stroke="#80d9ca" stroke-width="1.5"/></svg>ATLAS</div><span class="crumb">AUTONOMOUS SYSTEMS / SITE INSPECTION</span><span class="tag">RECORDED SIMULATION</span></header>
+<section class="intro"><div><div class="eyebrow">MISSION 001 / REDUCE THE UNKNOWN</div><h1>See what a single pass misses.</h1><p>A drone surveys an unfamiliar site, maps elevated surfaces, and chooses another view of areas it could not see.</p></div><div class="metrics"><div class="metric"><strong id="coverage">0.0%</strong><span>site observed</span></div><div class="metric"><strong id="unknown">576 m²</strong><span>still unobserved</span></div><div class="metric"><strong id="distance">0.0 m</strong><span>distance flown</span></div></div></section>
+<div class="stagebar" aria-label="Inspection cycle"><span class="stage active" data-phase="sense"><em>01</em>Sense</span><span class="stagearrow">→</span><span class="stage" data-phase="map"><em>02</em>Map</span><span class="stagearrow">→</span><span class="stage" data-phase="choose"><em>03</em>Choose a view</span><span class="stagearrow">→</span><span class="stage" data-phase="move"><em>04</em>Move</span><span class="stagearrow">→</span><span class="stage" data-phase="report"><em>05</em>Report</span><span class="stageinfo" id="view-info">VIEW 01 / 10</span></div>
+<section class="workspace">
+<div class="panel"><div class="panelhead"><span class="num">A</span><h2>Drone &amp; sensor</h2><span class="sub" id="flight-status">HOVERING</span></div><div class="scene-wrap"><canvas id="scene" aria-label="Animated isometric view of the drone and its depth rays over the simulated site"></canvas><div class="scene-note">SIMULATED ENVIRONMENT<br><span id="altitude">ALT 7.0 M</span></div><div class="scene-tools"><label><input id="rays-toggle" type="checkbox" checked>Sensor rays</label><button id="reset-camera" title="Reset the scene angle">Reset view</button></div></div><div class="key"><span><i class="swatch ray"></i>Measured line of sight</span><span><i class="swatch hidden"></i>Hidden behind a surface</span><span style="margin-left:auto">Drag to rotate</span></div></div>
+<div class="panel"><div class="panelhead"><span class="num">B</span><h2>What the drone knows</h2><span class="sub status-pill" id="map-status">AWAITING OBSERVATION</span></div><div class="mapwrap"><canvas id="map" aria-label="Observed ground in green, elevated surfaces in amber, and unobserved cells in dark gray"></canvas></div><div class="key"><span><i class="swatch"></i>Unseen</span><span><i class="swatch free"></i>Ground</span><span><i class="swatch blocked"></i>Elevated surface</span><span><i class="swatch new"></i>New evidence</span></div><div class="sensor"><div class="sensor-image"><canvas id="depth" aria-label="Recorded depth image, near surfaces amber and distant surfaces blue"></canvas><span class="sensor-badge" id="sensor-badge">CAPTURING VIEW 01</span></div><div class="sensor-copy"><p class="sensor-title">DEPTH CAMERA</p><p id="sensor-detail">Each pixel measures the distance to the first surface it sees.</p><div class="depth-scale"></div><div class="scale-labels"><span id="depth-near">Near</span><span id="depth-far">Far</span></div></div></div></div>
+</section>
+<section class="explanation" aria-label="Explanation of the current mission step"><div class="explain-icon" id="explain-step">01</div><div><h3 id="explain-title">Measure what is visible.</h3><p id="explain-copy">The camera sends depth rays into the scene. Each ray ends at the first surface; it cannot tell you what is behind that surface.</p></div></section>
+<nav class="playback" aria-label="Replay controls"><button class="play" id="play">▶ Start replay</button><button class="small" id="restart" title="Restart replay">↺</button><button class="small" id="previous" title="Previous observation">‹ View</button><button class="small" id="next" title="Next observation">View ›</button><span class="time" id="time">00:00 / 01:15</span><input class="scrubber" id="timeline" type="range" min="0" max="75" step="0.01" value="0" aria-label="Mission time"><select class="speed" id="speed" aria-label="Playback speed"><option value=".5">0.5×</option><option value="1">1×</option><option value="1.5" selected>1.5×</option><option value="2">2×</option><option value="4">4×</option></select></nav>
+<footer class="footer"><details><summary>What this demonstration proves—and its limits</summary><p>This is a replay of recorded sensor, map and planning results. The left scene shows simulator geometry; the planner only receives sensor-derived map evidence. The right map never fills unseen cells from the scene. Motion and yaw are animated between logged poses; the scan and map-reveal effects explain each recorded observation, rather than representing additional camera samples. Green means observed ground, not a certified safe route. The current backend uses known pose and simplified movement; PX4/Gazebo flight integration, SLAM and learned perception remain pending.</p></details><span class="record" id="record">SCENE 007 / ACTIVE POLICY</span></footer>
+</main>
+<script id="mission-data" type="application/json">__ATLAS_DATA__</script>
+<script>
+(()=>{
+'use strict';
+const D=JSON.parse(document.getElementById('mission-data').textContent),M=D.metadata,F=D.frames,N=D.gridSize,S=D.scene.size,res=M.config.resolution;
+const $=id=>document.getElementById(id),total=M.metrics.elapsed_seconds;
+const scene=$('scene'),map=$('map'),depth=$('depth'),sc=scene.getContext('2d'),mc=map.getContext('2d'),dc=depth.getContext('2d');
+const imageCache=F.map(f=>{const im=new Image();im.src=f.depthPNG;return im;});
+let time=0,playing=false,speed=1.5,last=0,orbit=0,raysOn=true,drag=null,displayState=null;
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),lerp=(a,b,t)=>a+(b-a)*t;
+const xyz=p=>[p.x,p.y,p.z],mix=(a,b,t)=>a.map((v,i)=>lerp(v,b[i],t));
+const yawMix=(a,b,t)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*t;
+const formatTime=s=>`${String(Math.floor(s/60)).padStart(2,'0')}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+const area=n=>(n*res*res).toFixed(1);
+const empty=new Array(N*N).fill(-1);
+$('timeline').max=total;
+$('record').textContent=`SCENE ${String(M.seed).padStart(3,'0')} / ${M.policy.toUpperCase()} POLICY`;
+function stateAt(t){
+  let i=F.findIndex(f=>t<=f.event.elapsed_seconds);
+  if(i<0){
+    const end=F[F.length-1].event,start=end.elapsed_seconds,home=M.path_including_return.at(-1);
+    const p=clamp((t-start)/Math.max(total-start,.01)),done=t>=total-.001;
+    return{phase:done?'report':'return',i:F.length-1,committed:F.length-1,position:mix(xyz(end.pose),home,p),yaw:end.pose.yaw,progress:p,labels:F.at(-1).labels,observed:end.observed_cells,distance:lerp(end.distance_m,M.metrics.flight_distance_m,p),target:home};
+  }
+  const f=F[i],event=f.event,prev=i?F[i-1].event:null;
+  const previousEnd=prev?prev.elapsed_seconds:0;
+  const obsDuration=M.config.observation_seconds*(event.retried?2:1);
+  const captureStart=Math.max(previousEnd,event.elapsed_seconds-obsDuration);
+  if(t<captureStart){
+    const p=clamp((t-previousEnd)/(captureStart-previousEnd));
+    return{phase:'move',i,committed:i-1,position:mix(xyz(prev.pose),xyz(event.pose),p),yaw:yawMix(prev.pose.yaw,event.pose.yaw,p),progress:p,labels:F[i-1].labels,observed:prev.observed_cells,distance:lerp(prev.distance_m,event.distance_m,p),target:xyz(event.pose)};
+  }
+  const p=clamp((t-captureStart)/Math.max(obsDuration,.01));
+  const phase=p<.5?'sense':p<.82?'map':'choose';
+  let labels=i?F[i-1].labels:empty,committed=i-1;
+  if(phase==='map'){
+    labels=labels.slice();const count=Math.floor(f.changed.length*clamp((p-.5)/.32));
+    for(let k=0;k<count;k++){const cell=f.changed[k];labels[cell]=f.labels[cell];}
+  }else if(phase==='choose'){labels=f.labels;committed=i;}
+  const observed=labels.reduce((a,v)=>a+(v!==-1),0);
+  return{phase,i,committed,position:xyz(event.pose),yaw:event.pose.yaw,progress:p,labels,observed,distance:event.distance_m,target:i+1<F.length?xyz(F[i+1].event.pose):M.path_including_return.at(-1)};
+}
+function sizeCanvas(canvas){const box=canvas.getBoundingClientRect(),ratio=Math.min(devicePixelRatio||1,2);const w=Math.round(box.width*ratio),h=Math.round(box.height*ratio);if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}const ctx=canvas.getContext('2d');ctx.setTransform(ratio,0,0,ratio,0,0);return[box.width,box.height];}
+function drawLine(ctx,pts,color,width=1,dash=[]){if(pts.length<2)return;ctx.beginPath();ctx.moveTo(...pts[0]);pts.slice(1).forEach(p=>ctx.lineTo(...p));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([]);}
+function polygon(ctx,pts,fill,stroke){ctx.beginPath();ctx.moveTo(...pts[0]);pts.slice(1).forEach(p=>ctx.lineTo(...p));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.7;ctx.stroke();}}
+function textTag(ctx,x,y,text,color='#c6d9dc'){
+  ctx.font='10px ui-monospace, monospace';const w=ctx.measureText(text).width+14;
+  x=clamp(x,6,ctx.canvas.width/(devicePixelRatio||1)-w-6);
+  ctx.fillStyle='#0c141beb';ctx.fillRect(x,y-15,w,22);ctx.strokeStyle='#3c515e';ctx.strokeRect(x,y-15,w,22);ctx.fillStyle=color;ctx.fillText(text,x+7,y);
+}
+function drawScene(s,stamp){
+  const[w,h]=sizeCanvas(scene);sc.clearRect(0,0,w,h);
+  const a=Math.PI/4+orbit,el=.52,scale=Math.min(w/(S*1.65),h/(S*.9+M.config.altitude*1.7))*.88;
+  const project=([x,y,z])=>{x-=S/2;y-=S/2;return[w/2+(Math.cos(a)*x-Math.sin(a)*y)*scale,h*.63+(Math.sin(a)*x+Math.cos(a)*y)*Math.sin(el)*scale-z*Math.cos(el)*scale];};
+  const ground=[[0,0,0],[S,0,0],[S,S,0],[0,S,0]].map(project);
+  polygon(sc,ground,'#182630','#40545d');
+  for(let j=0;j<=S;j+=3){drawLine(sc,[project([j,0,0]),project([j,S,0])],'#2b3c47',.7);drawLine(sc,[project([0,j,0]),project([S,j,0])],'#2b3c47',.7);}
+  const currentFrame=F[s.i],scanning=s.phase==='sense'||s.phase==='map'||s.phase==='choose';
+  if(scanning&&raysOn){
+    // Points have measured ranges, so occluded surfaces do not generate rays.
+    currentFrame.points.forEach(p=>{const q=project([p[0],p[1],Math.max(p[2],.02)]);sc.fillStyle='#80d9ca18';sc.beginPath();sc.arc(...q,3,0,Math.PI*2);sc.fill();});
+  }
+  // Sort all box faces in camera depth, so orbit remains coherent.
+  const faces=[];
+  D.scene.boxes.forEach(b=>{const x=b.x,y=b.y,z=b.height,r=x+b.width,q=y+b.depth;
+    const all=[[[x,y,z],[r,y,z],[r,q,z],[x,q,z]],[[x,y,0],[r,y,0],[r,y,z],[x,y,z]],[[r,y,0],[r,q,0],[r,q,z],[r,y,z]],[[r,q,0],[x,q,0],[x,q,z],[r,q,z]],[[x,q,0],[x,y,0],[x,y,z],[x,q,z]]];
+    all.forEach((pts,k)=>{const center=pts.reduce((v,p)=>v.map((n,j)=>n+p[j]/4),[0,0,0]);faces.push({pts,k,key:Math.sin(a)*center[0]+Math.cos(a)*center[1],fill:['#52606a','#34434e','#3c4b56','#43535e','#303f49'][k]});});
+  });
+  faces.sort((a,b)=>a.key-b.key).forEach(f=>polygon(sc,f.pts.map(project),f.fill,'#71808a40'));
+  const capturedPoses=M.events.slice(0,Math.max(s.committed+1,0)).map(e=>xyz(e.pose));
+  const trail=[...capturedPoses,s.position].map(project);drawLine(sc,trail,'#8aaba86b',1.5);
+  if(s.phase==='move'||s.phase==='choose'){
+    const target=project(s.target);drawLine(sc,[project(s.position),target],'#93c9c3aa',1,[4,5]);
+    sc.strokeStyle='#8ecdc1';sc.beginPath();sc.arc(...target,7,0,Math.PI*2);sc.stroke();
+    if(s.phase==='choose'&&Math.hypot(s.target[0]-s.position[0],s.target[1]-s.position[1])>1)textTag(sc,target[0]+12,target[1]-9,'NEXT VIEW');
+  }
+  const pos=project(s.position),shadow=project([s.position[0],s.position[1],.01]);
+  sc.fillStyle='#050c1460';sc.beginPath();sc.ellipse(...shadow,13,6,0,0,Math.PI*2);sc.fill();drawLine(sc,[pos,shadow],'#60808038',1,[2,4]);
+  if(scanning&&raysOn){
+    const alpha=s.phase==='sense'?.10+.10*Math.sin(stamp*.003):.08;
+    currentFrame.points.filter((_,i)=>i%3===0).forEach(p=>drawLine(sc,[pos,project(p)],`rgba(128,217,202,${alpha})`,.8));
+    const n=currentFrame.points.length,beam=Math.floor((stamp*.012)%Math.max(n,1));
+    if(n){const p=currentFrame.points[beam],end=project(p);drawLine(sc,[pos,end],'#a7f0d9',1.2);sc.fillStyle='#b0f2d7';sc.beginPath();sc.arc(...end,2.5,0,Math.PI*2);sc.fill();}
+    const oc=currentFrame.occlusion;
+    if(oc){const hit=project(oc[1]),hidden=project(oc[2]);drawLine(sc,[pos,hit],'#d8b883bd',1.2);drawLine(sc,[hit,hidden],'#ddb07c99',1,[3,4]);
+      if(s.phase==='sense')textTag(sc,hidden[0]+8,hidden[1]+16,'BLOCKED LINE OF SIGHT','#d9b786');}
+  }
+  // Four visible arms and animated rotors make the aerial robot readable.
+  const cy=Math.cos(s.yaw),sy=Math.sin(s.yaw);
+  function offset(dx,dy){return project([s.position[0]+cy*dx-sy*dy,s.position[1]+sy*dx+cy*dy,s.position[2]]);}
+  for(const[dx,dy]of[[-.75,-.75],[.75,-.75],[.75,.75],[-.75,.75]]){
+    const p=offset(dx,dy);drawLine(sc,[pos,p],'#dae4e7',3);
+    sc.strokeStyle='#a4d9d0';sc.lineWidth=1;sc.beginPath();sc.ellipse(...p,8,4,0,0,Math.PI*2);sc.stroke();
+    const r=playing?stamp*.04:0;drawLine(sc,[[p[0]-Math.cos(r)*7,p[1]-Math.sin(r)*3],[p[0]+Math.cos(r)*7,p[1]+Math.sin(r)*3]],'#c1eeeb',1.3);
+  }
+  sc.fillStyle='#dce8e8';sc.beginPath();sc.ellipse(...pos,7,4,-.3,0,Math.PI*2);sc.fill();
+  const nose=offset(.65,0);sc.fillStyle='#80d9ca';sc.beginPath();sc.arc(...nose,2.5,0,Math.PI*2);sc.fill();
+  textTag(sc,pos[0]+20,pos[1]-18,'DRONE 01');
+  const north=project([0,S,0]);sc.fillStyle='#91a3b0';sc.font='10px ui-monospace, monospace';sc.fillText('N',north[0]-14,north[1]+16);
+  const scaleStart=[25,h-24];drawLine(sc,[scaleStart,[scaleStart[0]+50,scaleStart[1]]],'#82969e',1);sc.fillText('SITE 24 × 24 M',25,h-35);
+}
+function hull(points){if(points.length<3)return points;const a=[...points].sort((p,q)=>p[0]-q[0]||p[1]-q[1]);const cross=(o,p,q)=>(p[0]-o[0])*(q[1]-o[1])-(p[1]-o[1])*(q[0]-o[0]);const lo=[],hi=[];for(const p of a){while(lo.length>1&&cross(lo.at(-2),lo.at(-1),p)<=0)lo.pop();lo.push(p);}for(const p of a.reverse()){while(hi.length>1&&cross(hi.at(-2),hi.at(-1),p)<=0)hi.pop();hi.push(p);}return lo.slice(0,-1).concat(hi.slice(0,-1));}
+function drawMap(s,stamp){
+  const[w,h]=sizeCanvas(map);mc.clearRect(0,0,w,h);const side=Math.min(w-22,h-16),ox=(w-side)/2,oy=(h-side)/2,cell=side/N;
+  const point=p=>[ox+p[0]/S*side,oy+side-p[1]/S*side];
+  mc.fillStyle='#0d151c';mc.fillRect(ox,oy,side,side);
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){const value=s.labels[y*N+x];mc.fillStyle=value===-1?'#1d2933':value===0?'#65998a':'#d8ac79';mc.fillRect(ox+x*cell,oy+(N-1-y)*cell,cell+.1,cell+.1);}
+  // Fine grid distinguishes dark unknown cells from empty outside canvas.
+  mc.strokeStyle='#08101820';mc.lineWidth=.4;for(let j=0;j<=N;j++){drawLine(mc,[[ox+j*cell,oy],[ox+j*cell,oy+side]],'#08101820',.4);drawLine(mc,[[ox,oy+j*cell],[ox+side,oy+j*cell]],'#08101820',.4);}
+  if(s.phase==='map'||s.phase==='choose'){
+    mc.fillStyle=`rgba(161,246,216,${s.phase==='map'?.32:.13})`;
+    for(const idx of F[s.i].new){if(s.labels[idx]!==-1){const x=idx%N,y=Math.floor(idx/N);mc.fillRect(ox+x*cell,oy+(N-y-1)*cell,cell,cell);}}
+  }
+  const predicted=s.phase==='choose'?F[s.i].predicted:s.phase==='move'&&s.i>0?F[s.i-1].predicted:[];
+  mc.fillStyle='#8ecfc629';for(const idx of predicted){if(s.labels[idx]===-1){const x=idx%N,y=Math.floor(idx/N);mc.fillRect(ox+x*cell,oy+(N-y-1)*cell,cell,cell);}}
+  const captured=M.events.slice(0,s.committed+1).map(e=>point(xyz(e.pose)));captured.push(point(s.position));drawLine(mc,captured,'#e4f0e29e',1.2);
+  if(['sense','map','choose'].includes(s.phase)&&raysOn){const footprint=hull(F[s.i].points.map(p=>point(p)));if(footprint.length>2){mc.save();mc.beginPath();mc.rect(ox,oy,side,side);mc.clip();polygon(mc,footprint,'#b5eed610','#a2d7c175');mc.restore();}}
+  if(s.phase==='choose'||s.phase==='move'){const target=point(s.target),now=point(s.position);drawLine(mc,[now,target],'#d6f1e8',1,[3,3]);mc.strokeStyle='#d6f1e8';mc.beginPath();mc.arc(...target,5,0,Math.PI*2);mc.stroke();}
+  const p=point(s.position),a=-s.yaw;
+  mc.save();mc.translate(...p);mc.rotate(a);polygon(mc,[[8,0],[-5,-4],[-3,0],[-5,4]],'#f3f7f2','#18342c');mc.restore();
+  mc.strokeStyle='#455962';mc.strokeRect(ox,oy,side,side);mc.font='9px ui-monospace, monospace';mc.fillStyle='#9bafb9';mc.fillText('N ↑',ox+side-25,oy-3);
+}
+function drawDepth(s){
+  const[w,h]=sizeCanvas(depth);dc.fillStyle='#0c1218';dc.fillRect(0,0,w,h);
+  const moving=s.phase==='move'||s.phase==='return'||s.phase==='report';
+  const index=moving?s.committed:s.i;
+  if(index<0)return;
+  const im=imageCache[index],f=F[index];dc.imageSmoothingEnabled=false;
+  const fraction=s.phase==='sense'?clamp(s.progress/.5):1;
+  if(im.complete&&im.naturalWidth){dc.save();dc.beginPath();dc.rect(0,0,w,h*fraction);dc.clip();dc.drawImage(im,0,0,w,h);dc.restore();}
+  if(s.phase==='sense'){dc.fillStyle='#b2efdf';dc.fillRect(0,h*fraction-1,w,1);}
+  $('depth-near').textContent=`${f.depthMin.toFixed(1)} m · near`;$('depth-far').textContent=`${f.depthMax.toFixed(1)} m · far`;
+}
+function updateText(s){
+  const f=F[s.i],next=F[s.i+1],e=f.event,known=s.observed/(N*N);
+  $('coverage').textContent=`${(known*100).toFixed(1)}%`;$('unknown').textContent=`${((N*N-s.observed)*res*res).toFixed(1)} m²`;$('distance').textContent=`${s.distance.toFixed(1)} m`;
+  $('time').textContent=`${formatTime(time)} / ${formatTime(total)}`;$('timeline').value=time;
+  $('altitude').textContent=`ALT ${s.position[2].toFixed(1)} M`;
+  $('view-info').textContent=`VIEW ${String(s.i+1).padStart(2,'0')} / ${F.length}`;
+  const phase=s.phase==='return'?'move':s.phase;
+  document.querySelectorAll('.stage').forEach(el=>el.classList.toggle('active',el.dataset.phase===phase));
+  const data={
+    sense:['01','Measure what is visible.','The camera measures distance to the first surface along each ray. A wall blocks the view behind it; that space remains unknown.'],
+    map:['02',`Add ${area(e.new_cells)} m² of new observations.`, 'Depth measurements become map cells: green for ground, amber for elevated surfaces. Bright cells are evidence added by this observation.'],
+    choose:next?['03','Choose a view that could reveal more.',`The next recorded viewpoint was expected to reveal ${area(next.event.predicted_new_cells||0)} m² of unseen map. The planner balances that estimate against travel distance; the estimate can be wrong.`]:['03','End the inspection and return.',`The mission stopped because ${M.stop_reason==='coverage_target'?'its coverage target was reached':M.stop_reason==='sensor_failure_return'?'depth measurements failed repeatedly':M.stop_reason==='observation_limit'?'the observation limit was reached':'no further suitable observation fit the plan'}. Remaining unknown cells are retained for review.`],
+    move:['04','Move to the next inspection viewpoint.', 'The drone follows the selected destination. The map is held until another observation is recorded; the depth panel shows the last captured frame.'],
+    return:['04','Return to the starting hover.', 'Inspection has ended. The drone returns at the same altitude; this simplified simulation does not model landing or aerodynamics.'],
+    report:['05',`${(known*100).toFixed(1)}% observed. ${((N*N-s.observed)*res*res).toFixed(1)} m² still unknown.`, 'The result is a partial evidence map, not a clearance certificate. Dark regions still need another observation; green only indicates observed ground.']
+  }[s.phase];
+  $('explain-step').textContent=data[0];$('explain-title').textContent=data[1];$('explain-copy').textContent=data[2];
+  $('flight-status').textContent={sense:'HOVER / CAPTURE',map:'PROCESS OBSERVATION',choose:'SELECT NEXT VIEW',move:'IN TRANSIT',return:'RETURNING',report:'REPLAY COMPLETE'}[s.phase];
+  $('map-status').textContent={sense:'COLLECTING DEPTH',map:'ADDING EVIDENCE',choose:'PREDICTING NEW COVERAGE',move:'LAST OBSERVED MAP',return:'FINAL OBSERVED MAP',report:'UNKNOWNS PRESERVED'}[s.phase];
+  const lastImage=['move','return','report'].includes(s.phase);
+  $('sensor-badge').textContent=lastImage?`LAST FRAME / VIEW ${String(s.committed+1).padStart(2,'0')}`:`CAPTURE / VIEW ${String(s.i+1).padStart(2,'0')}`;
+  $('sensor-detail').textContent=lastImage?'Recorded at the previous hover. No new camera measurements are added during travel.':`${Math.round(e.valid_depth_fraction*100)}% valid range returns. Black pixels carry no distance evidence.`;
+  $('previous').disabled=time<=0;$('next').disabled=time>=total;
+}
+function render(stamp=0){const s=stateAt(time);displayState=s;drawScene(s,stamp);drawMap(s,stamp);drawDepth(s);updateText(s);}
+function playLabel(){ $('play').textContent=playing?'Ⅱ Pause':time>=total?'↺ Replay':'▶ Play';$('play').setAttribute('aria-label',playing?'Pause replay':'Play replay'); }
+function tick(stamp){const delta=last?Math.min((stamp-last)/1000,.1):0;last=stamp;if(playing){time=Math.min(total,time+delta*speed);if(time>=total){playing=false;playLabel();}}render(stamp);requestAnimationFrame(tick);}
+$('play').onclick=()=>{if(time>=total)time=0;playing=!playing;playLabel();};
+$('restart').onclick=()=>{time=0;playing=false;playLabel();};
+$('timeline').addEventListener('input',e=>{time=Number(e.target.value);playing=false;playLabel();});
+$('speed').onchange=e=>{speed=Number(e.target.value);};
+$('next').onclick=()=>{const event=F.find(f=>f.event.elapsed_seconds>time+.4);time=event?Math.min(event.event.elapsed_seconds-.08,total):total;playing=false;playLabel();};
+$('previous').onclick=()=>{const events=F.filter(f=>f.event.elapsed_seconds<time-.5);time=events.length?events.at(-1).event.elapsed_seconds-.08:0;playing=false;playLabel();};
+$('rays-toggle').onchange=e=>{raysOn=e.target.checked;};$('reset-camera').onclick=()=>{orbit=0;};
+scene.addEventListener('pointerdown',e=>{drag={x:e.clientX,orbit};scene.setPointerCapture(e.pointerId);});
+scene.addEventListener('pointermove',e=>{if(drag)orbit=drag.orbit+(e.clientX-drag.x)*.009;});
+scene.addEventListener('pointerup',()=>drag=null);scene.addEventListener('pointercancel',()=>drag=null);
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&!['INPUT','SELECT','BUTTON'].includes(document.activeElement.tagName)){e.preventDefault();$('play').click();}});
+window.SentinelReplay={seek(t){time=clamp(t,0,total);playing=false;playLabel();render(performance.now());},getState(){return{time,phase:displayState?.phase,observed:displayState?.observed,playing,total};}};
+render();requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
