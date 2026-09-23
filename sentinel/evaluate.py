@@ -31,7 +31,7 @@ def evaluate(seeds, conditions, folder, config=None):
         writer.writeheader()
         writer.writerows(rows)
     summary = {"config": asdict(config), "seeds": seeds, "conditions": {},
-               "scope": "Kinematic depth simulation; no real flight or Gazebo validation"}
+               "scope": "Kinematic depth simulation; no physical-platform validation"}
     lines = ["# Evaluation results", "",
              "All policies use the same candidate locations, camera, scenes and mission budgets.",
              "The fixed policy follows a predetermined lawnmower order; active selects map-based views.",

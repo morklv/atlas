@@ -102,27 +102,3 @@ class World:
     def load(cls, path):
         data = json.loads(Path(path).read_text())
         return cls(data["size"], [Box(**b) for b in data["boxes"]], data.get("seed", 0))
-
-    def export_sdf(self, path):
-        """Export the same geometry for a future Gazebo integration test."""
-        models = []
-        for i, b in enumerate(self.boxes):
-            models.append(f'''<model name="obstacle_{i}"><static>true</static>
-              <pose>{b.x+b.width/2} {b.y+b.depth/2} {b.height/2} 0 0 0</pose>
-              <link name="body"><collision name="collision"><geometry><box><size>{b.width} {b.depth} {b.height}</size></box></geometry></collision>
-              <visual name="visual"><geometry><box><size>{b.width} {b.depth} {b.height}</size></box></geometry>
-              <material><diffuse>0.65 0.42 0.22 1</diffuse></material></visual></link></model>''')
-        text = f'''<?xml version="1.0"?>
-<sdf version="1.9"><world name="sentinel">
-<physics name="physics" type="ignored"><max_step_size>0.004</max_step_size><real_time_factor>1</real_time_factor></physics>
-<plugin filename="gz-sim-physics-system" name="gz::sim::systems::Physics"/>
-<plugin filename="gz-sim-user-commands-system" name="gz::sim::systems::UserCommands"/>
-<plugin filename="gz-sim-scene-broadcaster-system" name="gz::sim::systems::SceneBroadcaster"/>
-<plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors"><render_engine>ogre2</render_engine></plugin>
-<light type="directional" name="sun"><pose>0 0 20 0 0 0</pose><diffuse>0.8 0.8 0.8 1</diffuse><direction>-0.5 0.2 -1</direction></light>
-<model name="ground"><static>true</static><pose>{self.size/2} {self.size/2} -0.05 0 0 0</pose><link name="body">
-<collision name="collision"><geometry><box><size>{self.size} {self.size} 0.1</size></box></geometry></collision>
-<visual name="visual"><geometry><box><size>{self.size} {self.size} 0.1</size></box></geometry></visual></link></model>
-{''.join(models)}
-</world></sdf>'''
-        Path(path).write_text(text)

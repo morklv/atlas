@@ -33,6 +33,5 @@ make test
 make field
 ```
 
-The ROS 2 bridge is developed separately on Ubuntu. See `ros2_ws/README.md`.
-The browser simulation does not command a vehicle, certify a route, or infer
+The browser workspace does not command a vehicle, certify a route, or infer
 measured depth from an aerial image.

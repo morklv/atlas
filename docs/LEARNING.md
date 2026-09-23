@@ -22,7 +22,7 @@ Checkpoint: explain the complete loop without naming a software library.
 
 Read `Pose`, `Camera.basis` and `enu_to_ned` in `geometry.py`.
 Position is where the sensor is; orientation is where it points. Yaw is measured
-counterclockwise from east here. PX4's NED convention instead uses north, east,
+counterclockwise from east here. Some flight systems use the NED convention instead: north, east,
 down and yaw clockwise from north.
 
 Exercise: convert ENU position [3, 8, 7] into NED. Which axis should change sign?

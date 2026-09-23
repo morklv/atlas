@@ -62,9 +62,6 @@ def main():
     render.add_argument("folder", type=Path)
     commands.add_parser("doctor", help="Read-only check of available tools")
     commands.add_parser("test", help="Run the repository's geometry, mapping and mission checks")
-    export = commands.add_parser("export-world", help="Export scene geometry as JSON and Gazebo SDF")
-    export.add_argument("--seed", type=int, default=7)
-    export.add_argument("--out", type=Path, default=Path("output/world"))
     args = parser.parse_args()
     if args.command == "test":
         import unittest
@@ -142,20 +139,13 @@ def main():
                   "python": platform.python_version(),
                   "numpy": importlib.util.find_spec("numpy") is not None,
                   "Pillow": importlib.util.find_spec("PIL") is not None,
-                  "tools": {name: shutil.which(name) for name in ("gz", "brew", "cmake", "git")},
+                  "tools": {name: shutil.which(name) for name in ("clang++", "brew", "cmake", "git")},
                   "free_disk_gb": round(shutil.disk_usage(".").free/1e9, 1),
-                  "status": "Core uses Python/NumPy/Pillow. PX4/Gazebo are separate, unverified integrations."}
+                  "status": "Core uses Python, NumPy, Pillow, browser JavaScript, and optional local point-cloud tooling."}
         print(json.dumps(report, indent=2))
         return
     if args.command == "render":
         render_result(load_result(args.folder), args.folder)
-        return
-    if args.command == "export-world":
-        args.out.mkdir(parents=True, exist_ok=True)
-        world = World.generated(args.seed)
-        world.save(args.out / "scene.json")
-        world.export_sdf(args.out / "sentinel.sdf")
-        print(args.out.resolve())
         return
     config = MissionConfig(max_observations=args.max_observations, time_budget=args.time_budget)
     config.validate()
@@ -167,7 +157,6 @@ def main():
         result = run_mission(world, args.policy, args.condition, config)
         result.save(args.out)
         world.save(args.out / "scene.json")
-        world.export_sdf(args.out / "sentinel.sdf")
         render_result(result, args.out)
         print(json.dumps(result.metadata["metrics"], indent=2))
     print(f"Saved to {args.out.resolve()}")

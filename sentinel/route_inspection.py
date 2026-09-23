@@ -3,7 +3,7 @@
 The planner consumes only a vehicle route and the shared evidence map.  It does
 not use hidden world geometry: every task represents a route cell that remains
 unknown to the swarm.  Drone assignment is greedy but deterministic, which
-makes the policy easy to benchmark before a ROS 2 implementation exists.
+makes the policy easy to benchmark in the local route-planning workflow.
 """
 
 from dataclasses import dataclass

@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 import numpy as np
-from sentinel.geometry import Camera, Pose, enu_to_ned, yaw_enu_to_ned_degrees, optical_depth_to_range
+from sentinel.geometry import Camera, Pose, optical_depth_to_range
 from sentinel.world import World, Box
 from sentinel.sensor import DepthSensor, DepthFrame, SensorCondition
 from sentinel.mapping import EvidenceMap
@@ -21,11 +21,6 @@ class GeometryTests(unittest.TestCase):
             rays = camera.rays(pose)
             np.testing.assert_allclose(np.linalg.norm(rays, axis=-1), 1)
             np.testing.assert_allclose(rays[1, 1], basis[0])
-
-    def test_enu_ned(self):
-        np.testing.assert_array_equal(enu_to_ned([1, 2, 3]), [2, 1, -3])
-        self.assertEqual(yaw_enu_to_ned_degrees(0), 90)
-        self.assertAlmostEqual(yaw_enu_to_ned_degrees(np.pi/2), 0)
 
     def test_optical_depth_is_not_ray_range(self):
         c = Camera(width=3, height=3)
@@ -140,14 +135,11 @@ class MissionTests(unittest.TestCase):
             np.testing.assert_array_equal(result.snapshots[0], read.snapshots[0])
 
     def test_world_export(self):
-        from xml.etree import ElementTree
         world = World.generated(8)
         with tempfile.TemporaryDirectory() as directory:
             p = Path(directory)
             world.save(p/"scene.json")
-            world.export_sdf(p/"scene.sdf")
             self.assertEqual(world.boxes, World.load(p/"scene.json").boxes)
-            self.assertEqual(ElementTree.parse(p/"scene.sdf").getroot().tag, "sdf")
 
     def test_invalid_budget(self):
         with self.assertRaises(ValueError):

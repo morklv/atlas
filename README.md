@@ -2,7 +2,7 @@
 
 **Terrain perception and route planning for an outdoor rover prototype.**
 
-ATLAS turns aerial imagery or imported point clouds into a conservative terrain map, plans an A* rover route through observed traversable space, and provides a ROS 2/Gazebo rover demonstration for the same navigation idea.
+ATLAS turns aerial imagery or imported point clouds into a conservative terrain map and plans an A* rover route through observed traversable space.
 
 > This is a simulation and local-planning project. It is not validated on a physical robot, and an uploaded aerial image does not provide measured elevation or route clearance.
 
@@ -12,7 +12,6 @@ ATLAS turns aerial imagery or imported point clouds into a conservative terrain 
 - **Terrain perception:** optional local PyTorch/Mask2Former semantic segmentation maps aerial imagery to road, open ground, low vegetation, forest, water, and building classes.
 - **Navigation:** traversability costs and A* planning block unknown, flooded, forested, and building cells by default.
 - **Measured-data path:** XYZ CSV and ASCII PLY point-cloud import, slope-aware costs, and conservative LiDAR-semantic fusion primitives.
-- **Robotics integration:** `ros2_ws/src/atlas_ros` contains a ROS 2 Jazzy package that publishes a seven-waypoint route, follows it with `/cmd_vel`, bridges odometry, and runs headlessly in Gazebo Harmonic.
 - **Reproducible core simulation:** Python tests cover camera geometry, occlusion, evidence mapping, planning, route inspection, and browser planning logic.
 
 ## Run the field workspace
@@ -98,20 +97,6 @@ python3 -m sentinel evaluate-segmentation labels/manifest.json --out output/segm
 
 The report contains per-class precision, recall, IoU, pixel accuracy, and a confusion matrix. It does not claim results until real labeled imagery is provided.
 
-## ROS 2 rover demonstration
-
-The ROS portion is developed for Ubuntu 24.04 with ROS 2 Jazzy and Gazebo Harmonic. It has been run headlessly in an Ubuntu ARM VM.
-
-```bash
-source /opt/ros/jazzy/setup.bash
-cd ros2_ws
-colcon build --symlink-install
-source install/setup.bash
-ros2 launch atlas_ros atlas_demo.launch.py
-```
-
-See [ros2_ws/README.md](ros2_ws/README.md) for the data flow and limitations.
-
 ## Architecture
 
 ```text
@@ -122,8 +107,6 @@ semantic labels + measured terrain evidence
 traversability cost map -> A* route -> browser rover playback
         |
 native C++ step/slope feasibility mask for measured elevation grids
-        |
-ROS 2 Path -> route follower -> cmd_vel -> Gazebo rover -> odometry
 ```
 
 ## Verification
@@ -133,15 +116,14 @@ make test
 make field
 ```
 
-`make test` runs Python and browser-logic tests. `make field` rebuilds the local browser artifact and checks its inline JavaScript. GitHub Actions repeats these checks on Ubuntu.
+`make test` runs Python and browser-logic tests. `make field` rebuilds the local browser artifact and checks its inline JavaScript. GitHub Actions repeats these checks on macOS.
 
 ## Honest boundaries
 
 - The aerial model predicts **2D semantic classes**. It does not estimate surveyed elevation, vehicle clearance, or a safe real-world route.
-- The browser rover is a visual playback of the planned route. It is not live-linked to Gazebo.
-- The ROS/Gazebo demonstration runs headlessly because the ARM virtual machine's graphical Gazebo renderer was unstable.
-- The point-cloud and ROS terrain-fusion code establish interfaces for real sensors; no physical LiDAR, GPS/IMU fusion, SLAM, edge deployment, or real-robot validation is claimed.
+- The browser rover is a visual playback of the planned route; it does not control a physical robot.
+- The point-cloud path handles local files. No physical LiDAR, GPS/IMU fusion, SLAM, edge deployment, or real-robot validation is claimed.
 
 ## Portfolio summary
 
-Built ATLAS, a terrain-perception and rover-navigation prototype using Python, PyTorch, FastAPI, JavaScript, A* planning, ROS 2, Gazebo, and Linux. The project translates aerial semantic classes and point-cloud evidence into a conservative traversability map, plans rover routes through observed space, and validates a route-following data path in a ROS 2/Gazebo simulation.
+Built ATLAS, a Mac-native terrain-perception and rover-route-planning prototype using Python, PyTorch, FastAPI, JavaScript, Open3D, SQLite, C++, and A* planning. The project translates aerial semantic classes and point-cloud evidence into a conservative traversability map and plans candidate rover routes through observed space.

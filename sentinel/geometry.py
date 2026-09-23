@@ -1,7 +1,7 @@
 """Metric ENU coordinates: x east, y north, z up; yaw counterclockwise from east.
 
 Camera rays use Euclidean range, NOT optical-axis depth. Keep this distinction
-when integrating a real sensor or Gazebo: z-depth must be converted first.
+when integrating another sensor: z-depth must be converted first.
 """
 from dataclasses import dataclass
 import numpy as np
@@ -58,16 +58,6 @@ class Camera:
                 & (np.linalg.norm(delta, axis=1) < self.far)
                 & (np.abs(delta @ r) <= z * np.tan(np.deg2rad(self.hfov / 2)))
                 & (np.abs(delta @ up) <= z * np.tan(np.deg2rad(self.vfov / 2))))
-
-
-def enu_to_ned(xyz):
-    """PX4 uses north/east/down. No arbitrary origin shift is performed."""
-    x, y, z = xyz
-    return np.array([y, x, -z], dtype=float)
-
-
-def yaw_enu_to_ned_degrees(yaw):
-    return float((90 - np.rad2deg(yaw)) % 360)
 
 
 def optical_depth_to_range(depth, camera):

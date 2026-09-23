@@ -4,15 +4,14 @@
 
 The working directory contained résumé artifacts but no existing ATLAS repo.
 The new project is isolated in `sentinel/`. The Mac reported Apple silicon and
-missing Command Line Tools, Homebrew and Gazebo. A bundled Python with NumPy and
+a missing Command Line Tools installation. A bundled Python with NumPy and
 Pillow could run the reference implementation without installing system software.
 
 ## Why a separate reference simulator exists
 
 It lets us test camera projection, occlusion, mapping and viewpoint selection
 immediately. It has an explicit sensor interface and supplies depth, not detections.
-This is a functional fallback, with much weaker flight assumptions than Gazebo.
-The missing real integration is recorded rather than silently treated as done.
+This is a local reference model with simplified motion assumptions. Physical-platform integration is recorded rather than silently treated as done.
 
 ## First observed mapping issue
 

@@ -156,7 +156,7 @@ def render_flight_replay(result, world, folder):
         event = m["events"][index]
         label(d, (750, 580), f"Observed: {event['coverage']:.1%}    New cells: {event['new_cells']}", 19, TEAL)
         label(d, (750, 620), "Unknown space remains dark.", 17, MUTED)
-        label(d, (30, 711), "No aerodynamics, motor control or learned perception in this replay. PX4/Gazebo integration is pending.", 16, MUTED)
+        label(d, (30, 711), "No aerodynamics, motor control, learned perception, or physical-platform integration in this replay.", 16, MUTED)
         return image
 
     events = m["events"]

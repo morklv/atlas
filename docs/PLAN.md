@@ -6,7 +6,7 @@ evidence. It is not a promise that all the original flight-stack integration is 
 
 | Days | Engineering work | Your learning checkpoint |
 |---|---|---|
-| 1–2 | Run the current demo/tests; install and validate PX4/Gazebo tools if available | Explain sensor -> map -> planner -> movement |
+| 1–2 | Run the current demo/tests and validate local tooling | Explain sensor -> map -> planner -> route playback |
 | 3–4 | Verify camera pose, range conventions and scene geometry; examine mapper errors | Reconstruct a point from a depth pixel |
 | 5–6 | Work through mapping; introduce one deliberate perturbation and explain it | Distinguish unknown from free and measured from assumed |
 | 7–8 | Study/adapt viewpoint scoring; test against preplanned coverage | Explain predicted versus actual gain |
@@ -22,14 +22,12 @@ evidence. It is not a promise that all the original flight-stack integration is 
 - [x] Saved observations, event logs, reproducible scenarios and evaluation reports.
 - [x] Animated isometric replay and an observed-map/depth report.
 - [x] Automated geometry, mapping, planner, mission and failure checks.
-- [x] Learning guide and Gazebo world export.
+- [x] Learning guide and local world export.
 
 ## Still pending
 
-- [ ] Xcode developer tools/Homebrew/Gazebo/PX4 installed and smoke-tested.
+- [ ] Xcode developer tools installed and smoke-tested.
 - [ ] Live camera mount, intrinsics and timestamped pose validated.
-- [ ] Live PX4 movement interface connected to the mission runner.
-- [ ] An end-to-end mission actually run under PX4/Gazebo.
 - [ ] Mark's explanations, modifications, fresh experiments and narrated demo.
 
 The current backend is a useful executable reference for those tasks. It does

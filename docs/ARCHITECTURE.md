@@ -25,14 +25,9 @@ ray with the nearest box or ground surface.
 `world_point = camera_position + unit_world_ray * measured_range`
 
 The sensor emits **ray range**, which differs from optical-axis depth away from
-the center pixel. `optical_depth_to_range` provides the conversion for a future
-Gazebo adapter. The live probe saves raw optical depth; it does not silently
-feed it into the range mapper.
+the center pixel. `optical_depth_to_range` provides the conversion whenever a source stores optical-axis depth. Raw optical depth is not silently fed into the range mapper.
 
-The current camera is colocated with the drone pose. A physical or PX4-mounted
-camera will need an explicit mount translation and rotation, including vehicle
-roll/pitch and a time-matched pose. None of that is inferred from the latest
-unsynchronized telemetry.
+The current camera is colocated with the synthetic observer pose. A physical camera will need an explicit mount translation and rotation, including vehicle roll/pitch and a time-matched pose.
 
 ## Evidence map
 

@@ -1,4 +1,4 @@
-"""Measured-terrain fusion used by the ATLAS simulation and future ROS 2 node."""
+"""Measured-terrain fusion used by the ATLAS local route-planning workflow."""
 from dataclasses import dataclass
 import numpy as np
 

@@ -49,43 +49,6 @@ georeference pixels. An Earth anchor can turn local route coordinates into a
 GeoJSON visualization, but without surveyed georeferencing its geographic
 accuracy is only as good as the supplied anchor. Vertical datum is unspecified.
 
-## Optional ROS 2 data path
-
-`sentinel.integrations.ros2_cloud` is a **source-code bridge** for an actual ROS 2
-`sensor_msgs/PointCloud2` stream. It transforms points into a Cartesian `map`
-frame using the timestamped TF transform, rejects a cloud if TF is unavailable,
-and writes an XYZ CSV. On an Ubuntu ROS 2 machine with the `rclpy`,
-`sensor_msgs_py` and `tf2_ros` packages, and this project importable in the same
-Python environment:
-
-```bash
-python3 -m sentinel.integrations.ros2_cloud \
-  --topic /points --frame map --clouds 10 \
-  --out output/captured-map.csv
-```
-
-Then import `output/captured-map.csv` into the field workspace. The collector does
-not perform registration/SLAM, deskew a moving LiDAR scan, estimate poses, infer
-ground/obstacle classes, or verify calibration. The pure coordinate-transform
-math has unit tests; the node has **not** been run against ROS 2 or hardware on
-this Mac. Do not present this as a deployed or integration-tested ROS pipeline.
-
-## ROS 2-ready output
-
-Every route download includes a local ENU waypoint path, a route-confidence
-score and an `OccupancyGrid`-compatible layer (`-1` unknown, `0` free and `100`
-occupied). The Ubuntu workspace in `ros2_ws/` contains `sentinel_ros`, a ROS 2
-Jazzy package that turns a `PointCloud2` stream into the same conservative
-occupancy encoding. Build instructions are in `ros2_ws/README.md`.
-
 ## Evidence and next experiment
 
-The ground and air route algorithms, unknown-space rejection, clearance, point
-import and coordinate mapping have automated tests in `tests/navigation.test.cjs`.
-`tests/test_ros2_cloud.py` covers only transform math. The strongest next
-portfolio improvement is to import a small, properly georeferenced outdoor
-dataset; document its frame and calibration; hold out ground-truth points;
-report map-height or registration error, route validity, latency and failure
-cases. The next integration milestone is to feed synchronized aerial semantic
-labels and LiDAR points into the ROS 2 fusion node, then validate its occupancy
-grid in Gazebo or another ROS 2 simulator before hardware deployment.
+The ground and air route algorithms, unknown-space rejection, clearance, point import and coordinate mapping have automated tests in `tests/navigation.test.cjs`. The strongest next portfolio improvement is to import a small, properly georeferenced outdoor dataset; document its frame and calibration; hold out ground-truth points; and report map-height or registration error, route validity, latency, and failure cases.
