@@ -16,7 +16,7 @@
 @media(max-width:1200px){.layout{grid-template-columns:235px minmax(0,1fr)}.routepanel .map-wrap{height:560px;min-height:560px}}
 @media(max-width:760px){.layout,.routepanel{display:block}.canvas-wrap,.routepanel .map-wrap{height:440px;min-height:0}}
 </style></head><body><main class="shell">
-<header class="top"><span class="mark" aria-hidden="true"></span><span class="title">ATLAS / SURVEY + ROUTE</span><div class="right"><span>LOCAL ENGINEERING WORKSPACE</span><span class="mode" id="mode-badge">RECORDED SIMULATION</span></div></header>
+<header class="top"><span class="mark" aria-hidden="true"></span><span class="title">ATLAS / SURVEY + ROUTE</span><div class="right"><span id="server-state">CONNECTING TO LOCAL SERVER</span><span class="mode" id="mode-badge">RECORDED SIMULATION</span></div></header>
 <div class="process"><strong>01 INPUT</strong><i></i><strong>02 SURVEY</strong><i></i><strong>03 ROUTE</strong><div class="summary"><span>MAP <b id="top-coverage">0%</b></span><span>ROUTE <b id="top-route">—</b></span></div></div>
 <div class="layout"><aside class="panel controls"><div class="bar"><h2>Input &amp; limits</h2><span class="tail">LOCAL FILES ONLY</span></div>
 <div class="section"><div class="sectitle">TERRAIN SOURCE</div><span class="label">Overhead aerial image</span><input id="photo" type="file" accept="image/png,image/jpeg,image/webp"><p class="warning" id="photo-warning">A local model predicts roads, open ground, low vegetation, forest, water, and buildings. Heights are assumed for visualization; route clearance and real 3D geometry remain unmeasured. Styled map screenshots may classify poorly.</p><p class="small" id="upload-state">NO IMAGE SELECTED · IMAGE RECOGNITION REQUIRES THE LOCAL FIELD SERVER</p><div class="pair"><div><span class="label">Square side / m</span><input id="side" type="number" min="10" max="500" value="48"></div><div><span class="label">Assumed building height / m</span><input id="amplitude" type="number" min="0" max="30" value="4" step=".5"></div></div><div class="row"><button id="restore">RESTORE DEMO</button><button id="rebuild" disabled>REBUILD IMAGE</button></div><details style="margin-top:15px"><summary>Use measured LiDAR / point cloud (XYZ or ASCII PLY)</summary><span class="label">Point cloud</span><input id="points" type="file" accept=".csv,.xyz,.txt,.ply"><p>Measured points can be routed on directly. They do not replay the drone survey.</p></details></div>
@@ -30,6 +30,16 @@
 (()=>{'use strict';
 const D=JSON.parse(document.getElementById('field-data').textContent),A=SentinelNavigation,F=FieldCore,$=id=>document.getElementById(id);
 const scene=$('scene'),map=$('map'),sc=scene.getContext('2d'),mc=map.getContext('2d');
+function connectServerStatus(){
+  if(location.protocol==='file:'){$('server-state').textContent='LOCAL FILE / SERVER OFFLINE';return}
+  const scheme=location.protocol==='https:'?'wss':'ws';
+  const socket=new WebSocket(scheme+'://'+location.host+'/ws/status');
+  socket.onopen=()=>{$('server-state').textContent='LOCAL SERVER CONNECTED'};
+  socket.onmessage=event=>{try{const status=JSON.parse(event.data);$('server-state').textContent='SERVER · '+status.phase.toUpperCase();if(status.phase==='segmenting'||status.phase==='error')$('upload-state').textContent=status.detail}catch(_){$('server-state').textContent='SERVER STATUS UNAVAILABLE'}};
+  socket.onclose=()=>{$('server-state').textContent='LOCAL SERVER OFFLINE'};
+  socket.onerror=()=>{$('server-state').textContent='LOCAL SERVER OFFLINE'};
+}
+connectServerStatus();
 let n=96,r=.5,events=[],index=-1,playing=false,timer=null,photoImage=null,semantic=null,semanticN=0,mode='recorded',measuredGrid=null,lastStepAt=0,stepDuration=360;
 let start=[8,8],goal=[50,44],pick='start',orbit=0,zoom=1,drag=null,route=null,costmap=null,lastError='',mapBox=null,inspection=null,roverTimer=null,roverRunning=false,roverDistance=0,roverLastAt=0;
 let homes=D.homes.map(p=>[p[0]/r,p[1]/r]);

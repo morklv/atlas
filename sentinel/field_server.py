@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
-
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from PIL import Image, UnidentifiedImageError
 
@@ -16,6 +15,26 @@ MODEL_SOURCE = "mfaytin/mask2former-satellite"
 app = FastAPI(title="ATLAS local field workspace")
 _model = None
 _processor = None
+_subscribers: set[WebSocket] = set()
+_status: dict[str, str] = {"phase": "ready", "detail": "Local ATLAS server is ready."}
+
+
+def status_payload() -> dict[str, str]:
+    """Return the current non-sensitive local processing state."""
+    return dict(_status)
+
+
+async def publish_status(phase: str, detail: str) -> None:
+    """Update connected browser clients; disconnected clients are removed."""
+    _status.update(phase=phase, detail=detail)
+    stale = []
+    for socket in _subscribers:
+        try:
+            await socket.send_json(status_payload())
+        except RuntimeError:
+            stale.append(socket)
+    for socket in stale:
+        _subscribers.discard(socket)
 
 
 def _load_model():
@@ -80,6 +99,19 @@ def field_page():
     return FileResponse(FIELD_HTML, media_type="text/html")
 
 
+@app.websocket("/ws/status")
+async def server_status(socket: WebSocket):
+    """Keep the field page informed about local image-processing state."""
+    await socket.accept()
+    _subscribers.add(socket)
+    await socket.send_json(status_payload())
+    try:
+        while True:
+            await socket.receive_text()
+    except WebSocketDisconnect:
+        _subscribers.discard(socket)
+
+
 @app.post("/api/segment")
 async def segment(file: UploadFile = File(...)):
     if file.content_type not in {"image/png", "image/jpeg", "image/webp"}:
@@ -93,6 +125,10 @@ async def segment(file: UploadFile = File(...)):
     except (UnidentifiedImageError, OSError):
         raise HTTPException(400, "The image could not be decoded.") from None
     try:
-        return segment_image(image)
+        await publish_status("segmenting", "Preparing local PyTorch aerial-image segmentation.")
+        result = segment_image(image)
     except RuntimeError as exc:
+        await publish_status("error", str(exc))
         raise HTTPException(503, str(exc)) from exc
+    await publish_status("ready", "Local aerial-image segmentation finished.")
+    return result
