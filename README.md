@@ -41,6 +41,17 @@ Open [http://127.0.0.1:8767](http://127.0.0.1:8767).
 
 The browser survey, point-cloud import, route planning, and rover playback work with the `field` install. Image segmentation needs the optional model setup below.
 
+## Process a measured point cloud
+
+ATLAS can clean an ASCII PLY, XYZ, CSV, or TXT cloud with Open3D and export a conservative terrain grid. The result retains gaps as unknown cells and uses the highest measured point per grid cell.
+
+```bash
+python3 -m pip install -e ".[pointcloud]"
+python3 -m sentinel pointcloud path/to/terrain.ply --out output/terrain --resolution 0.5
+```
+
+The command writes `terrain_grid.npz` and `report.json`. It does not invent missing terrain or claim a safe real-world route.
+
 ## Enable local aerial-image segmentation
 
 The model weights are intentionally excluded from Git because they are large. From the repository root:
