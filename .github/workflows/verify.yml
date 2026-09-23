@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: python -m pip install -e .
+      - run: python -m pip install -e ".[field,pointcloud]"
       - run: make test
       - run: make field
       - run: python -m py_compile ros2_ws/src/atlas_ros/atlas_ros/terrain_fusion_node.py
