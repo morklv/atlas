@@ -69,6 +69,24 @@ python3 scripts/fetch_aerial_model.py
 
 This downloads the public `mfaytin/mask2former-satellite` checkpoint to `.models/openearth-mask2former`. Inference is local and runs on CPU by default.
 
+## Evaluate the segmentation model honestly
+
+ATLAS includes a metric runner for your own labeled aerial images. Ground-truth grayscale masks use these values: `0` open, `1` road, `2` building, `3` forest, `4` low vegetation, and `5` water. Create a JSON manifest such as:
+
+```json
+[
+  {"image": "orchard.png", "mask": "orchard_mask.png"}
+]
+```
+
+Then run:
+
+```bash
+python3 -m sentinel evaluate-segmentation labels/manifest.json --out output/segmentation-evaluation
+```
+
+The report contains per-class precision, recall, IoU, pixel accuracy, and a confusion matrix. It does not claim results until real labeled imagery is provided.
+
 ## ROS 2 rover demonstration
 
 The ROS portion is developed for Ubuntu 24.04 with ROS 2 Jazzy and Gazebo Harmonic. It has been run headlessly in an Ubuntu ARM VM.

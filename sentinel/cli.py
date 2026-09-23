@@ -35,6 +35,9 @@ def main():
     experiments = commands.add_parser("experiments", help="List recent local ATLAS experiment records")
     experiments.add_argument("--database", type=Path, default=Path("output/atlas_experiments.sqlite"))
     experiments.add_argument("--limit", type=int, default=20)
+    segmentation_eval = commands.add_parser("evaluate-segmentation", help="Evaluate local aerial segmentation against labeled masks")
+    segmentation_eval.add_argument("manifest", type=Path, help="JSON list of image and grayscale-mask pairs")
+    segmentation_eval.add_argument("--out", type=Path, default=Path("output/segmentation-evaluation"))
     bench = commands.add_parser("swarm-benchmark", help="Paired coordinated/independent synthetic swarm trials")
     bench.add_argument("--seeds", type=int, nargs="+", default=list(range(17,27)))
     bench.add_argument("--rounds", type=int, default=8)
@@ -95,6 +98,12 @@ def main():
     if args.command == "experiments":
         from .experiments import recent_experiments
         print(json.dumps(recent_experiments(args.database, args.limit), indent=2))
+        return
+    if args.command == "evaluate-segmentation":
+        from .segmentation_evaluation import evaluate_manifest
+        result = evaluate_manifest(args.manifest, args.out)
+        print(json.dumps(result["aggregate_metrics"], indent=2))
+        print(f"Saved to {args.out.resolve()}")
         return
     if args.command == "swarm-benchmark":
         from .swarm import benchmark_swarm
