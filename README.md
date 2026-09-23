@@ -58,6 +58,17 @@ Each point-cloud run is also saved in `output/atlas_experiments.sqlite` with the
 python3 -m sentinel experiments
 ```
 
+## Native C++ terrain checks
+
+ATLAS includes a small dependency-free C++17 core for checking a measured elevation grid against maximum step and slope limits. Unknown (`NaN`) cells stay blocked and the tool returns a machine-readable traversability mask.
+
+```bash
+python3 -m sentinel native-build
+python3 -m sentinel native-terrain-cost elevation.npy --resolution 0.5 --max-step 0.25 --max-slope 20
+```
+
+The build uses Apple Clang, included with Xcode Command Line Tools. If the compiler reports an SDK or linker error, repair the local developer tools with `xcode-select --install`, then rerun it. This component checks geometric elevation limits only; it does not assess soil, water, wheel slip, or real-world safety.
+
 ## Enable local aerial-image segmentation
 
 The model weights are intentionally excluded from Git because they are large. From the repository root:
@@ -109,6 +120,8 @@ Aerial image / XYZ / PLY
 semantic labels + measured terrain evidence
         |
 traversability cost map -> A* route -> browser rover playback
+        |
+native C++ step/slope feasibility mask for measured elevation grids
         |
 ROS 2 Path -> route follower -> cmd_vel -> Gazebo rover -> odometry
 ```

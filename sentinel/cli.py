@@ -38,6 +38,15 @@ def main():
     segmentation_eval = commands.add_parser("evaluate-segmentation", help="Evaluate local aerial segmentation against labeled masks")
     segmentation_eval.add_argument("manifest", type=Path, help="JSON list of image and grayscale-mask pairs")
     segmentation_eval.add_argument("--out", type=Path, default=Path("output/segmentation-evaluation"))
+    native_build = commands.add_parser("native-build", help="Compile the Mac-native C++ terrain feasibility tool")
+    native_build.add_argument("--out", type=Path, default=Path("output/native/atlas_terrain_cost"))
+    native_cost = commands.add_parser("native-terrain-cost", help="Analyze a saved NumPy elevation grid with the native C++ tool")
+    native_cost.add_argument("grid", type=Path, help=".npy elevation grid; NaN cells are treated as unknown")
+    native_cost.add_argument("--executable", type=Path, default=Path("output/native/atlas_terrain_cost"))
+    native_cost.add_argument("--out", type=Path, default=Path("output/native/terrain_cost.json"))
+    native_cost.add_argument("--resolution", type=float, default=.5)
+    native_cost.add_argument("--max-step", type=float, default=.25)
+    native_cost.add_argument("--max-slope", type=float, default=20.)
     bench = commands.add_parser("swarm-benchmark", help="Paired coordinated/independent synthetic swarm trials")
     bench.add_argument("--seeds", type=int, nargs="+", default=list(range(17,27)))
     bench.add_argument("--rounds", type=int, default=8)
@@ -103,6 +112,21 @@ def main():
         from .segmentation_evaluation import evaluate_manifest
         result = evaluate_manifest(args.manifest, args.out)
         print(json.dumps(result["aggregate_metrics"], indent=2))
+        print(f"Saved to {args.out.resolve()}")
+        return
+    if args.command == "native-build":
+        from .native_terrain import build
+        print(build(args.out))
+        return
+    if args.command == "native-terrain-cost":
+        import numpy as np
+        from .native_terrain import analyze, build
+        executable = args.executable if args.executable.is_file() else build(args.executable)
+        result = analyze(np.load(args.grid), executable, args.resolution, args.max_step, args.max_slope)
+        result["traversable_mask"] = result["traversable_mask"].astype(int).ravel().tolist()
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(result, indent=2))
+        print(json.dumps(result["metrics"], indent=2))
         print(f"Saved to {args.out.resolve()}")
         return
     if args.command == "swarm-benchmark":
