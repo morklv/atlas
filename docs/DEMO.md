@@ -3,7 +3,7 @@
 ## Start the local workspace
 
 ```bash
-cd /path/to/sentinel
+cd /path/to/atlas
 make field
 bash run.sh field-server --port 8767
 ```
@@ -16,13 +16,14 @@ aerial-image inference; opening `field.html` as a file will not provide it.
 1. Upload an overhead PNG, JPEG, or WebP image under 10 MB.
 2. Wait for local semantic segmentation. The map identifies road/track, open
    ground, low vegetation, forest, water, and buildings.
-3. Run the five-drone survey. Each observer contributes to a shared map.
+3. Run the eight-observer survey. Each observer contributes to a shared map.
 4. Set a start and destination on traversable terrain, then plan a route.
 5. Hover route-adjacent cells to inspect LiDAR evidence, confidence, terrain
    class, slope, and blocked reason.
 6. Click **Request swarm route inspection**. The simulation targets uncertain
    route stretches, assigns nearby observers, adds evidence, and replans.
-7. Download **Route + occupancy JSON**. It contains local ENU waypoints,
+7. Click **Drive route** to show the planned route as a rover playback in the browser.
+8. Download **Route + occupancy JSON**. It contains local ENU waypoints,
    route confidence, and OccupancyGrid-compatible values.
 
 ## Validate before a demo

@@ -23,7 +23,7 @@ and Node 22.
 | Uncertainty inspection | `sentinel.route_inspection` tests for task grouping and drone assignment |
 | Vehicle navigation | semantic costmap and A* browser tests |
 | ROS 2-ready output | browser route download contains OccupancyGrid-compatible values |
-| ROS 2 bridge | `ros2_ws/src/sentinel_ros` PointCloud2-to-OccupancyGrid package |
+| ROS 2 bridge | `ros2_ws/src/atlas_ros` PointCloud2-to-OccupancyGrid package |
 | Reproducibility | Makefile and GitHub Actions workflow |
 
 The simulator has not been validated on a real robot or a running ROS 2/Gazebo
