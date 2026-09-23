@@ -31,6 +31,10 @@ def main():
     pointcloud.add_argument("--out", type=Path, default=Path("output/pointcloud"))
     pointcloud.add_argument("--resolution", type=float, default=.5, help="Terrain grid resolution in metres")
     pointcloud.add_argument("--voxel-size", type=float, default=.15, help="Open3D downsampling voxel size in metres")
+    pointcloud.add_argument("--database", type=Path, default=Path("output/atlas_experiments.sqlite"))
+    experiments = commands.add_parser("experiments", help="List recent local ATLAS experiment records")
+    experiments.add_argument("--database", type=Path, default=Path("output/atlas_experiments.sqlite"))
+    experiments.add_argument("--limit", type=int, default=20)
     bench = commands.add_parser("swarm-benchmark", help="Paired coordinated/independent synthetic swarm trials")
     bench.add_argument("--seeds", type=int, nargs="+", default=list(range(17,27)))
     bench.add_argument("--rounds", type=int, default=8)
@@ -71,12 +75,26 @@ def main():
         uvicorn.run("sentinel.field_server:app", host="127.0.0.1", port=args.port)
         return
     if args.command == "pointcloud":
+        from .experiments import record_experiment
         from .pointcloud import load_points, process_cloud, save_result
         raw = load_points(args.input)
         result = process_cloud(args.input, resolution_m=args.resolution, voxel_size_m=args.voxel_size)
         report = save_result(result, args.out, len(raw))
+        experiment_id = record_experiment(
+            args.database,
+            kind="open3d_pointcloud",
+            input_path=args.input,
+            configuration={"resolution_m": args.resolution, "voxel_size_m": args.voxel_size},
+            metrics=report,
+            artifacts={"terrain_grid": str(args.out / "terrain_grid.npz"), "report": str(args.out / "report.json")},
+        )
+        report["experiment_id"] = experiment_id
         print(json.dumps(report, indent=2))
         print(f"Saved to {args.out.resolve()}")
+        return
+    if args.command == "experiments":
+        from .experiments import recent_experiments
+        print(json.dumps(recent_experiments(args.database, args.limit), indent=2))
         return
     if args.command == "swarm-benchmark":
         from .swarm import benchmark_swarm

@@ -52,6 +52,12 @@ python3 -m sentinel pointcloud path/to/terrain.ply --out output/terrain --resolu
 
 The command writes `terrain_grid.npz` and `report.json`. It does not invent missing terrain or claim a safe real-world route.
 
+Each point-cloud run is also saved in `output/atlas_experiments.sqlite` with the input hash, settings, metrics, and artifact locations. Review recent runs with:
+
+```bash
+python3 -m sentinel experiments
+```
+
 ## Enable local aerial-image segmentation
 
 The model weights are intentionally excluded from Git because they are large. From the repository root:

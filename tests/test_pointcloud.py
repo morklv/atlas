@@ -4,7 +4,8 @@ from pathlib import Path
 
 import numpy as np
 
-from sentinel.pointcloud import clean_points, load_points, process_cloud, save_result, terrain_grid
+from sentinel.experiments import recent_experiments
+from sentinel.pointcloud import clean_points, process_cloud, save_result, terrain_grid
 
 
 class PointCloudTests(unittest.TestCase):
@@ -37,3 +38,23 @@ class PointCloudTests(unittest.TestCase):
             saved = np.load(Path(folder) / "out" / "terrain_grid.npz")
             self.assertIn("elevation", saved.files)
             self.assertTrue((Path(folder) / "out" / "report.json").is_file())
+
+    def test_experiment_ledger_stores_input_hash_and_metrics(self):
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / "sample.xyz"
+            np.savetxt(source, self.points)
+            result = process_cloud(source, resolution_m=.25, voxel_size_m=.04)
+            report = save_result(result, Path(folder) / "out", len(self.points))
+            from sentinel.experiments import record_experiment
+            record_experiment(
+                Path(folder) / "experiments.sqlite",
+                kind="open3d_pointcloud",
+                input_path=source,
+                configuration={"resolution_m": .25},
+                metrics=report,
+                artifacts={"grid": "terrain_grid.npz"},
+            )
+            history = recent_experiments(Path(folder) / "experiments.sqlite")
+            self.assertEqual(len(history), 1)
+            self.assertEqual(history[0]["input_name"], "sample.xyz")
+            self.assertEqual(history[0]["metrics"]["input_points"], len(self.points))
