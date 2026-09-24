@@ -21,12 +21,12 @@ function imageTerrain(image,n=64,amplitude=4){
   }
   return smooth;
 }
-function simulateSurvey(truth,n,resolution=.5,droneCount=4){
+function simulateSurvey(truth,n,resolution=.5,droneCount=6){
   if(truth.length!==n*n||!Number.isFinite(resolution)||resolution<=0)throw Error('Terrain and grid dimensions disagree.');
   if(!Number.isInteger(droneCount)||droneCount<1||droneCount>8)throw Error('Use between one and eight simulated observers.');
   // Four parallel lanes give the playback and the evidence map the same geometry:
   // all units advance as one front while their range footprints cover adjacent swaths.
-  const margin=Math.max(4,Math.floor(n*.05)),radius=Math.max(4,Math.ceil((n-margin*2)/(droneCount*2))),stride=Math.max(5,radius),lanes=Array.from({length:droneCount},(_,id)=>margin+(id+.5)/droneCount*(n-margin*2)),rows=[];
+  const margin=Math.max(4,Math.floor(n*.05)),radius=Math.max(4,Math.ceil((n-margin*2)/(droneCount*1.65))),stride=Math.max(5,radius),lanes=Array.from({length:droneCount},(_,id)=>margin+(id+.5)/droneCount*(n-margin*2)),rows=[];
   for(let y=margin;y<n-margin;y+=stride)rows.push(y);if(rows.at(-1)!==n-margin-1)rows.push(n-margin-1);
   const height=new Float64Array(n*n).fill(NaN),known=new Uint8Array(n*n),count=new Uint8Array(n*n),events=[];
   for(let turn=0;turn<rows.length;turn++)for(let drone=0;drone<droneCount;drone++){
