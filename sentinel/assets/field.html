@@ -72,30 +72,26 @@ function project(w,h){/* Default view keeps image east on the right. Reset resto
 function line(ctx,points,color,width=1,dash=[]){if(points.length<2)return;ctx.beginPath();ctx.moveTo(...points[0]);for(const p of points.slice(1))ctx.lineTo(...p);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([]);}
 function polygon(ctx,points,fill,stroke){ctx.beginPath();ctx.moveTo(...points[0]);for(const p of points.slice(1))ctx.lineTo(...p);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.4;ctx.stroke()}}
 function aircraft(ctx,x,y,size,angle,color,id){
-  // Original twin-nacelle tiltrotor silhouette with two wings and two visible propellers.
+  // Minimal original twin-prop tiltrotor mark for the overhead map.
   const poly=(pts,fill,stroke='#0b1110')=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(const q of pts.slice(1))ctx.lineTo(...q);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=.08;ctx.stroke()};
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(size,size);
-  poly([[1.08,0],[.48,-.24],[-.5,-.2],[-1.48,-.08],[-1.72,0],[-1.48,.08],[-.5,.2],[.48,.24]],color);
-  poly([[.52,-.2],[-.15,-1.18],[-.52,-1.18],[-.34,-.18],[-.78,-.1],[-.78,.1],[-.34,.18],[-.52,1.18],[-.15,1.18],[.52,.2]],'#40584b');
-  poly([[.75,0],[.25,-.19],[-.12,-.16],[-.12,.16],[.25,.19]],'#708878');
-  for(const lateral of [-1.03,1.03]){ctx.strokeStyle='#d0ddd3';ctx.lineWidth=.1;ctx.beginPath();ctx.moveTo(-.34,lateral-.43);ctx.lineTo(-.34,lateral+.43);ctx.moveTo(-.77,lateral);ctx.lineTo(.09,lateral);ctx.stroke();ctx.fillStyle='#16221d';ctx.beginPath();ctx.arc(-.34,lateral,.13,0,Math.PI*2);ctx.fill();}
-  ctx.restore();ctx.save();ctx.translate(x,y-size*1.75);ctx.rotate(angle);poly([[.8,0],[-.55,-.42],[-.28,0],[-.55,.42]],'#b9d0c2','#4d655a');ctx.restore();ctx.fillStyle='#e4ebe2';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),x+size*1.45,y-size*.55);
+  poly([[1,0],[.36,-.2],[-1.2,-.13],[-1.52,0],[-1.2,.13],[.36,.2]],color);
+  poly([[.18,-1.02],[-.2,-1.02],[-.36,0],[-.2,1.02],[.18,1.02],[.35,0]],'#486251');
+  for(const lateral of [-.86,.86]){ctx.strokeStyle='#cad8ce';ctx.lineWidth=.1;ctx.beginPath();ctx.moveTo(-.76,lateral);ctx.lineTo(.15,lateral);ctx.moveTo(-.3,lateral-.45);ctx.lineTo(-.3,lateral+.45);ctx.stroke();ctx.fillStyle='#16221d';ctx.beginPath();ctx.arc(-.3,lateral,.12,0,Math.PI*2);ctx.fill();}
+  ctx.restore();ctx.save();ctx.translate(x,y-size*1.55);ctx.rotate(angle);poly([[.65,0],[-.4,-.3],[-.22,0],[-.4,.3]],'#b9d0c2','#4d655a');ctx.restore();ctx.fillStyle='#e4ebe2';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),x+size*1.3,y-size*.45);
 }
 function nextWaypoint(id){for(let i=index+1;i<events.length;i++)if(events[i].drone===id)return[events[i].x,events[i].y];return null}
 function headingFor(id){let prior=homes[id],latest=homes[id];for(let i=0;i<=index;i++)if(events[i].drone===id){prior=latest;latest=[events[i].x,events[i].y]}const next=nextWaypoint(id),from=next?latest:prior,to=next||latest;return Math.atan2(-(to[1]-from[1]),to[0]-from[0]);}
 function projectedHeading(project,position,altitude,id){const target=nextWaypoint(id);if(!target)return headingFor(id);const a=project((position[0]+.5)*r,(position[1]+.5)*r,altitude),b=project((target[0]+.5)*r,(target[1]+.5)*r,altitude);return Math.atan2(b[1]-a[1],b[0]-a[0]);}
 function worldHeading(id,position){const target=nextWaypoint(id);return target?Math.atan2(target[1]-position[1],target[0]-position[0]):headingFor(id);}
 function droneMesh(ctx,project,position,altitude,yaw,id){
-  // Original tactical twin-nacelle tiltrotor: compact cabin, broad wings and two animated propellers.
-  const scale=1.3,c=Math.cos(yaw),s=Math.sin(yaw),point=(forward,lateral,z=0)=>project((position[0]+.5)*r+forward*scale*c-lateral*scale*s,(position[1]+.5)*r+forward*scale*s+lateral*scale*c,altitude+z*scale);
-  const nose=point(1.02,0,.18),top=point(.22,0,.48),tail=point(-1.42,0,.26),belly=point(.04,0,-.18),left=point(.18,.34,.16),right=point(.18,-.34,.16);
-  polygon(ctx,[nose,left,top,tail,belly],'#3e584a','#080d0d');polygon(ctx,[nose,belly,tail,top,right],'#263b31','#080d0d');polygon(ctx,[nose,right,top,left],'#6d8675','#080d0d');
-  const wingRootL=point(.26,.22,.18),wingTipL=point(-.2,1.42,.12),wingTailL=point(-.62,.28,.13),wingRootR=point(.26,-.22,.18),wingTipR=point(-.2,-1.42,.12),wingTailR=point(-.62,-.28,.13);polygon(ctx,[wingRootL,wingTipL,wingTailL],'#4f6a59','#09100d');polygon(ctx,[wingRootR,wingTailR,wingTipR],'#31483a','#09100d');
-  line(ctx,[tail,point(-1.7,0,.35)],'#385044',2.7);line(ctx,[tail,point(-1.7,0,.35)],'#0b120f',.8);
-  const spin=performance.now()/54+id*.77,rotors=[[-.18,1.2],[-.18,-1.2]];
-  for(const [forward,lateral] of rotors){const hub=point(forward,lateral,.28),tip=(a)=>point(forward+Math.cos(a)*.62,lateral+Math.sin(a)*.62,.28);line(ctx,[tip(spin),tip(spin+Math.PI)],'#d4e0d7',1.15);line(ctx,[tip(spin+Math.PI/2),tip(spin+Math.PI*1.5)],'#d4e0d7',1.15);ctx.fillStyle='#17251e';ctx.beginPath();ctx.arc(hub[0],hub[1],2.6,0,Math.PI*2);ctx.fill();}
-  const sensor=point(.72,0,-.26);ctx.fillStyle='#111b16';ctx.beginPath();ctx.arc(sensor[0],sensor[1],3,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#92a99a';ctx.lineWidth=.7;ctx.stroke();
-  const markerTip=point(.5,0,1.0),markerLeft=point(-.18,.2,1.0),markerTail=point(-.02,0,1.0),markerRight=point(-.18,-.2,1.0);polygon(ctx,[markerTip,markerLeft,markerTail,markerRight],'#b9d0c2','#4d655a');ctx.fillStyle='#e4e8e6';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),nose[0]+7,nose[1]-6);
+  // Minimal twin-nacelle tiltrotor: one dark body, one wing, two rotor discs and one direction marker.
+  const scale=1.18,c=Math.cos(yaw),s=Math.sin(yaw),point=(forward,lateral,z=0)=>project((position[0]+.5)*r+forward*scale*c-lateral*scale*s,(position[1]+.5)*r+forward*scale*s+lateral*scale*c,altitude+z*scale);
+  const nose=point(.92,0,.12),top=point(.08,0,.36),tail=point(-1.3,0,.18),belly=point(.02,0,-.12),left=point(.12,.28,.1),right=point(.12,-.28,.1);
+  polygon(ctx,[nose,left,top,tail,belly],'#405a4b','#08100d');polygon(ctx,[nose,belly,tail,top,right],'#293d32','#08100d');polygon(ctx,[nose,right,top,left],'#6f8977','#08100d');
+  const wingL=point(-.12,1.18,.13),wingR=point(-.12,-1.18,.13),wingLead=point(.22,0,.16),wingTail=point(-.48,0,.14);polygon(ctx,[wingLead,wingL,wingTail,wingR],'#4a6554','#09100d');
+  const spin=performance.now()/55+id*.77,rotors=[[-.14,1.02],[-.14,-1.02]];for(const [forward,lateral] of rotors){const hub=point(forward,lateral,.23),tip=a=>point(forward+Math.cos(a)*.55,lateral+Math.sin(a)*.55,.23);line(ctx,[tip(spin),tip(spin+Math.PI)],'#d4e0d7',1);line(ctx,[tip(spin+Math.PI/2),tip(spin+Math.PI*1.5)],'#d4e0d7',1);ctx.fillStyle='#17251e';ctx.beginPath();ctx.arc(hub[0],hub[1],2.3,0,Math.PI*2);ctx.fill();}
+  const markerTip=point(.42,0,.85),markerLeft=point(-.16,.18,.85),markerTail=point(-.01,0,.85),markerRight=point(-.16,-.18,.85);polygon(ctx,[markerTip,markerLeft,markerTail,markerRight],'#b9d0c2','#4d655a');ctx.fillStyle='#e4e8e6';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),nose[0]+6,nose[1]-5);
 }
 function drones(){const out=homes.map(v=>v.slice());for(let i=0;i<=index;i++){const e=events[i];if(e.drone>=0)out[e.drone]=[e.x,e.y];}const next=playing?events[index+1]:null;if(next&&next.drone>=0){const v=out[next.drone],t=Math.max(0,Math.min(1,(performance.now()-lastStepAt)/stepDuration)),f=t*t*(3-2*t);out[next.drone]=[v[0]+(next.x-v[0])*f,v[1]+(next.y-v[1])*f]}return out;}
 function routeHistory(id){const history=[homes[id]];for(let i=0;i<=index;i++)if(events[i].drone===id)history.push([events[i].x,events[i].y]);return history;}
