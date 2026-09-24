@@ -72,15 +72,16 @@ function project(w,h){/* Default view keeps image east on the right. Reset resto
 function line(ctx,points,color,width=1,dash=[]){if(points.length<2)return;ctx.beginPath();ctx.moveTo(...points[0]);for(const p of points.slice(1))ctx.lineTo(...p);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([]);}
 function polygon(ctx,points,fill,stroke){ctx.beginPath();ctx.moveTo(...points[0]);for(const p of points.slice(1))ctx.lineTo(...p);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=.4;ctx.stroke()}}
 function aircraft(ctx,x,y,size,angle,color,id){
-  // Minimal, original fixed-wing survey silhouette for the overhead view.
-  const poly=(pts,fill)=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(const q of pts.slice(1))ctx.lineTo(...q);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle='#4d5654';ctx.lineWidth=.07;ctx.stroke()};
+  // Original overhead attack-helicopter silhouette: tandem cabin, stub wings, tail boom and rotor disc.
+  const poly=(pts,fill,stroke='#0b1110')=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(const q of pts.slice(1))ctx.lineTo(...q);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=.08;ctx.stroke()};
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(size,size);
-  poly([[1.2,0],[.28,-.14],[-.08,-.72],[-.28,-.72],[-.36,-.16],[-.9,-.12],[-1.05,0],[-.9,.12],[-.36,.16],[-.28,.72],[-.08,.72],[.28,.14]],color);
-  poly([[.82,0],[.25,-.1],[-.25,0],[.25,.1]],'#eef0ef');
-  ctx.restore();
-  // A small neutral-green marker stays readable over pale terrain without resembling a product logo.
-  ctx.save();ctx.translate(x,y-size*1.55);ctx.rotate(angle);poly([[.8,0],[-.55,-.42],[-.28,0],[-.55,.42]],'#b9d0c2');ctx.restore();
-  ctx.fillStyle='#e4ebe2';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),x+size*1.35,y-size*.45);
+  poly([[1.08,0],[.62,-.28],[-.12,-.34],[-.54,-.18],[-1.58,-.08],[-1.8,0],[-1.58,.08],[-.54,.18],[-.12,.34],[.62,.28]],color);
+  poly([[.74,0],[.3,-.22],[-.08,-.2],[-.08,.2],[.3,.22]],'#687e70');
+  poly([[-.08,-.24],[-.38,-.98],[-.6,-.98],[-.48,-.2],[-.9,-.1],[-.9,.1],[-.48,.2],[-.6,.98],[-.38,.98],[-.08,.24]],'#31473d');
+  ctx.strokeStyle='#c9d9ce';ctx.lineWidth=.09;ctx.beginPath();ctx.moveTo(-.22,-1.35);ctx.lineTo(-.22,1.35);ctx.moveTo(-1.35,0);ctx.lineTo(.92,0);ctx.stroke();
+  ctx.fillStyle='#151f1b';ctx.beginPath();ctx.arc(.87,0,.14,0,Math.PI*2);ctx.fill();ctx.restore();
+  ctx.save();ctx.translate(x,y-size*1.75);ctx.rotate(angle);poly([[.8,0],[-.55,-.42],[-.28,0],[-.55,.42]],'#b9d0c2','#4d655a');ctx.restore();
+  ctx.fillStyle='#e4ebe2';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),x+size*1.45,y-size*.55);
 }
 function nextWaypoint(id){for(let i=index+1;i<events.length;i++)if(events[i].drone===id)return[events[i].x,events[i].y];return null}
 function headingFor(id){let prior=homes[id],latest=homes[id];for(let i=0;i<=index;i++)if(events[i].drone===id){prior=latest;latest=[events[i].x,events[i].y]}const next=nextWaypoint(id),from=next?latest:prior,to=next||latest;return Math.atan2(-(to[1]-from[1]),to[0]-from[0]);}
@@ -93,7 +94,11 @@ function droneMesh(ctx,project,position,altitude,yaw,id){
   polygon(ctx,[nose,leftCabin,cabinTop,cabinTail,tailBase,belly],'#40564a','#080d0d');
   polygon(ctx,[nose,belly,tailBase,cabinTail,rightCabin],'#26382f','#080d0d');
   polygon(ctx,[nose,rightCabin,cabinTop,leftCabin],'#647a6c','#080d0d');
-  line(ctx,[tailBase,tailEnd],'#344b40',3);line(ctx,[tailBase,tailEnd],'#0c1612',1);
+  const frontCanopy=[point(.74,-.26,.25),point(.28,-.31,.54),point(.28,.31,.54),point(.74,.26,.25)],rearCanopy=[point(.18,-.3,.5),point(-.36,-.27,.46),point(-.36,.27,.46),point(.18,.3,.5)];
+  polygon(ctx,frontCanopy,'#879d8d','#17231e');polygon(ctx,rearCanopy,'#687f71','#17231e');
+  const leftWingTip=point(-.18,.98,.08),leftWingRoot=point(.08,.3,.18),leftWingTail=point(-.57,.3,.14),rightWingTip=point(-.18,-.98,.08),rightWingRoot=point(.08,-.3,.18),rightWingTail=point(-.57,-.3,.14);
+  polygon(ctx,[leftWingRoot,leftWingTip,leftWingTail],'#3e5548','#0a100e');polygon(ctx,[rightWingRoot,rightWingTail,rightWingTip],'#273b31','#0a100e');
+  line(ctx,[tailBase,tailEnd],'#344b40',3);line(ctx,[tailBase,tailEnd],'#0c1612',1);const tailFin=point(-1.5,0,.72);polygon(ctx,[tailEnd,tailFin,point(-1.28,0,.3)],'#42584b','#0a100e');
   line(ctx,[leftSkidA,leftSkidB],'#b6c8bc',1.1);line(ctx,[rightSkidA,rightSkidB],'#b6c8bc',1.1);line(ctx,[leftSkidA,rightSkidA],'#6f8779',.8);line(ctx,[leftSkidB,rightSkidB],'#6f8779',.8);
   const spin=performance.now()/58+id*.83,hub=point(-.05,0,.72),blade=(angle,length)=>point(-.05+Math.cos(angle)*length,Math.sin(angle)*length,.72);
   line(ctx,[blade(spin,1.18),blade(spin+Math.PI,1.18)],'#d0ddd3',1.15);line(ctx,[blade(spin+Math.PI/2,1.18),blade(spin+Math.PI*1.5,1.18)],'#d0ddd3',1.15);ctx.fillStyle='#1a2a22';ctx.beginPath();ctx.arc(hub[0],hub[1],2.4,0,Math.PI*2);ctx.fill();
