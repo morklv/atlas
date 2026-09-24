@@ -75,9 +75,9 @@ function aircraft(ctx,x,y,size,angle,color,id){
   // Compact original unmanned aircraft: swept wings, rear pusher propeller and V-tail.
   const poly=(pts,fill,stroke='#061316')=>{ctx.beginPath();ctx.moveTo(...pts[0]);for(const q of pts.slice(1))ctx.lineTo(...q);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=.08;ctx.stroke()};
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(size,size);
-  poly([[1.0,0],[.26,-.18],[-.74,-.14],[-1.15,0],[-.74,.14],[.26,.18]],'#14515a');
-  poly([[.34,0],[-.15,-1.08],[-.52,-1.08],[-.36,-.12],[-.82,-.08],[-.82,.08],[-.36,.12],[-.52,1.08],[-.15,1.08]],'#1b7884');
-  ctx.strokeStyle='#a4edf0';ctx.lineWidth=.1;ctx.beginPath();ctx.moveTo(-.83,-.38);ctx.lineTo(-.83,.38);ctx.moveTo(-1.15,-.25);ctx.lineTo(-1.15,.25);ctx.stroke();ctx.fillStyle='#08343b';ctx.beginPath();ctx.arc(-.83,0,.12,0,Math.PI*2);ctx.fill();ctx.restore();
+  poly([[1.18,0],[.34,-.13],[-1.16,-.1],[-1.56,0],[-1.16,.1],[.34,.13]],'#14515a');
+  poly([[.14,-1.72],[-.18,-1.72],[-.42,-.12],[-.68,-.08],[-.68,.08],[-.42,.12],[-.18,1.72],[.14,1.72],[.34,0]],'#1b7884');
+  ctx.strokeStyle='#a4edf0';ctx.lineWidth=.1;ctx.beginPath();ctx.moveTo(-1.1,-.44);ctx.lineTo(-1.1,.44);ctx.moveTo(-1.54,-.28);ctx.lineTo(-1.54,.28);ctx.stroke();ctx.fillStyle='#08343b';ctx.beginPath();ctx.arc(-1.1,0,.12,0,Math.PI*2);ctx.fill();ctx.restore();
   ctx.save();ctx.translate(x,y-size*1.48);ctx.rotate(angle);poly([[.55,0],[-.35,-.25],[-.18,0],[-.35,.25]],'#a4edf0','#326b70');ctx.restore();ctx.fillStyle='#e4f4f4';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),x+size*1.22,y-size*.4);
 }
 function nextWaypoint(id){for(let i=index+1;i<events.length;i++)if(events[i].drone===id)return[events[i].x,events[i].y];return null}
@@ -88,10 +88,10 @@ function droneMesh(ctx,project,position,altitude,yaw,id){
   // Compact original UAV with a blended fuselage, swept wings, pusher propeller and V-tail.
   const scale=1.08,c=Math.cos(yaw),s=Math.sin(yaw),point=(forward,lateral,z=0)=>project((position[0]+.5)*r+forward*scale*c-lateral*scale*s,(position[1]+.5)*r+forward*scale*s+lateral*scale*c,altitude+z*scale);
   const ground=point(0,0,-altitude/scale+.04);ctx.save();ctx.globalAlpha=.2;ctx.fillStyle='#020607';ctx.beginPath();ctx.ellipse(ground[0],ground[1],16,5,0,0,Math.PI*2);ctx.fill();ctx.restore();
-  const nose=point(.95,0,.12),top=point(.16,0,.34),tail=point(-1.0,0,.16),belly=point(.02,0,-.12),left=point(.1,.23,.08),right=point(.1,-.23,.08);polygon(ctx,[nose,left,top,tail,belly],'#14515a','#061316');polygon(ctx,[nose,belly,tail,top,right],'#092f36','#061316');polygon(ctx,[nose,right,top,left],'#247f8b','#061316');
-  const lRoot=point(.22,.18,.13),lTip=point(-.28,1.18,.08),lTail=point(-.62,.26,.07),rRoot=point(.22,-.18,.13),rTip=point(-.28,-1.18,.08),rTail=point(-.62,-.26,.07);polygon(ctx,[lRoot,lTip,lTail],'#1c7783','#061316');polygon(ctx,[rRoot,rTail,rTip],'#10525c','#061316');line(ctx,[lRoot,lTip],'#64cfd5',.55);line(ctx,[rRoot,rTip],'#64cfd5',.55);
-  const propHub=point(-1.02,0,.2),spin=performance.now()/50+id*.76,tip=a=>point(-1.02+Math.cos(a)*.42,Math.sin(a)*.42,.2);line(ctx,[tip(spin),tip(spin+Math.PI)],'#a4edf0',1);line(ctx,[tip(spin+Math.PI/2),tip(spin+Math.PI*1.5)],'#a4edf0',1);ctx.fillStyle='#06262c';ctx.beginPath();ctx.arc(propHub[0],propHub[1],2.1,0,Math.PI*2);ctx.fill();
-  const tailEnd=point(-1.4,0,.22),tailL=point(-1.15,.34,.45),tailR=point(-1.15,-.34,.45);line(ctx,[tail,tailEnd],'#14515a',2);polygon(ctx,[tailEnd,tailL,point(-.94,0,.2),tailR],'#0d4650','#061316');
+  const nose=point(1.16,0,.12),top=point(.12,0,.3),tail=point(-1.42,0,.16),belly=point(.02,0,-.12),left=point(.1,.18,.08),right=point(.1,-.18,.08);polygon(ctx,[nose,left,top,tail,belly],'#14515a','#061316');polygon(ctx,[nose,belly,tail,top,right],'#092f36','#061316');polygon(ctx,[nose,right,top,left],'#247f8b','#061316');
+  const lRoot=point(.16,.14,.13),lTip=point(-.18,1.72,.08),lTail=point(-.48,.22,.07),rRoot=point(.16,-.14,.13),rTip=point(-.18,-1.72,.08),rTail=point(-.48,-.22,.07);polygon(ctx,[lRoot,lTip,lTail],'#1c7783','#061316');polygon(ctx,[rRoot,rTail,rTip],'#10525c','#061316');line(ctx,[lRoot,lTip],'#64cfd5',.55);line(ctx,[rRoot,rTip],'#64cfd5',.55);
+  const propHub=point(-1.45,0,.2),spin=performance.now()/50+id*.76,tip=a=>point(-1.45+Math.cos(a)*.48,Math.sin(a)*.48,.2);line(ctx,[tip(spin),tip(spin+Math.PI)],'#a4edf0',1);line(ctx,[tip(spin+Math.PI/2),tip(spin+Math.PI*1.5)],'#a4edf0',1);ctx.fillStyle='#06262c';ctx.beginPath();ctx.arc(propHub[0],propHub[1],2.1,0,Math.PI*2);ctx.fill();
+  const tailEnd=point(-1.85,0,.22),tailL=point(-1.56,.42,.5),tailR=point(-1.56,-.42,.5);line(ctx,[tail,tailEnd],'#14515a',2);polygon(ctx,[tailEnd,tailL,point(-1.32,0,.2),tailR],'#0d4650','#061316');
   const markerTip=point(.35,0,.82),markerLeft=point(-.12,.13,.82),markerTail=point(-.01,0,.82),markerRight=point(-.12,-.13,.82);polygon(ctx,[markerTip,markerLeft,markerTail,markerRight],'#a4edf0','#326b70');ctx.fillStyle='#e4f4f4';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),nose[0]+6,nose[1]-5);
 }
 function drones(){const out=homes.map(v=>v.slice());for(let i=0;i<=index;i++){const e=events[i];if(e.drone>=0)out[e.drone]=[e.x,e.y];}const next=playing?events[index+1]:null;if(next&&next.drone>=0){const v=out[next.drone],t=Math.max(0,Math.min(1,(performance.now()-lastStepAt)/stepDuration)),f=t*t*(3-2*t);out[next.drone]=[v[0]+(next.x-v[0])*f,v[1]+(next.y-v[1])*f]}return out;}
