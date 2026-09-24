@@ -1,129 +1,63 @@
 # ATLAS
 
-**Terrain perception and route planning for an outdoor rover prototype.**
+ATLAS is a local browser demo for exploring terrain and planning a candidate rover route.
 
-ATLAS turns aerial imagery or imported point clouds into a conservative terrain map and plans an A* rover route through observed traversable space.
+It runs on your computer. It is not a hosted website and it does not control a real vehicle.
 
-> This is a simulation and local-planning project. It is not validated on a physical robot, and an uploaded aerial image does not provide measured elevation or route clearance.
+## What works
 
-## What is implemented
+- A browser workspace with a terrain map and 3D view.
+- A simulated six-drone survey that progressively reveals the terrain map.
+- A* route planning between two selected points.
+- A route-corridor review that highlights uncertain areas and replans the candidate route.
+- Import of local XYZ, CSV, TXT, or ASCII PLY point clouds for terrain review.
+- Export of the planned route and occupancy grid as JSON.
+- Automated Python and browser-logic tests on GitHub Actions.
 
-- **Interactive field workspace:** a 3D browser view of an eight-observer aerial survey, terrain evidence, route confidence, and an animated ATLAS rover route playback.
-- **Terrain perception:** optional local PyTorch/Mask2Former semantic segmentation maps aerial imagery to road, open ground, low vegetation, forest, water, and building classes.
-- **Navigation:** traversability costs and A* planning block unknown, flooded, forested, and building cells by default.
-- **Measured-data path:** XYZ CSV and ASCII PLY point-cloud import, slope-aware costs, and conservative LiDAR-semantic fusion primitives.
-- **Reproducible core simulation:** Python tests cover camera geometry, occlusion, evidence mapping, planning, route inspection, and browser planning logic.
-
-## Run the field workspace
+## Run locally
 
 ### macOS or Linux
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install --upgrade pip
 .venv/bin/python -m pip install -e ".[field]"
-.venv/bin/python -m sentinel field-server --port 8767
+bash run.sh swarm --out output/swarm
+bash run.sh field-server --port 8767
 ```
 
-Open [http://127.0.0.1:8767](http://127.0.0.1:8767). The server generates the browser artifact if it is missing.
+Then open [http://127.0.0.1:8767](http://127.0.0.1:8767) in a browser.
 
 ### Windows PowerShell
 
 ```powershell
 py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -e ".[field]"
+.\.venv\Scripts\python.exe -m sentinel swarm --out output/swarm
 .\.venv\Scripts\python.exe -m sentinel field-server --port 8767
 ```
 
-Open [http://127.0.0.1:8767](http://127.0.0.1:8767).
+Then open [http://127.0.0.1:8767](http://127.0.0.1:8767).
 
-The browser survey, point-cloud import, route planning, and rover playback work with the `field` install. Image segmentation needs the optional model setup below.
+## Optional aerial-image analysis
 
-## Process a measured point cloud
-
-ATLAS can clean an ASCII PLY, XYZ, CSV, or TXT cloud with Open3D and export a conservative terrain grid. The result retains gaps as unknown cells and uses the highest measured point per grid cell.
+ATLAS can run a pretrained local image-segmentation model after the optional model setup:
 
 ```bash
-python3 -m pip install -e ".[pointcloud]"
-python3 -m sentinel pointcloud path/to/terrain.ply --out output/terrain --resolution 0.5
+.venv/bin/python -m pip install -e ".[vision]"
+.venv/bin/python scripts/fetch_aerial_model.py
 ```
 
-The command writes `terrain_grid.npz` and `report.json`. It does not invent missing terrain or claim a safe real-world route.
+The model predicts 2D terrain classes from an aerial image. The displayed terrain relief and drone survey remain illustrative; an uploaded image does not provide measured elevation or real-world route clearance.
 
-Each point-cloud run is also saved in `output/atlas_experiments.sqlite` with the input hash, settings, metrics, and artifact locations. Review recent runs with:
-
-```bash
-python3 -m sentinel experiments
-```
-
-## Native C++ terrain checks
-
-ATLAS includes a small dependency-free C++17 core for checking a measured elevation grid against maximum step and slope limits. Unknown (`NaN`) cells stay blocked and the tool returns a machine-readable traversability mask.
-
-```bash
-python3 -m sentinel native-build
-python3 -m sentinel native-terrain-cost elevation.npy --resolution 0.5 --max-step 0.25 --max-slope 20
-```
-
-The build uses Apple Clang, included with Xcode Command Line Tools. If the compiler reports an SDK or linker error, repair the local developer tools with `xcode-select --install`, then rerun it. This component checks geometric elevation limits only; it does not assess soil, water, wheel slip, or real-world safety.
-
-## Enable local aerial-image segmentation
-
-The model weights are intentionally excluded from Git because they are large. From the repository root:
-
-```bash
-python3 -m pip install -e ".[vision]"
-python3 scripts/fetch_aerial_model.py
-```
-
-This downloads the public `mfaytin/mask2former-satellite` checkpoint to `.models/openearth-mask2former`. Inference is local and runs on CPU by default.
-
-## Evaluate the segmentation model honestly
-
-ATLAS includes a metric runner for your own labeled aerial images. Ground-truth grayscale masks use these values: `0` open, `1` road, `2` building, `3` forest, `4` low vegetation, and `5` water. Create a JSON manifest such as:
-
-```json
-[
-  {"image": "orchard.png", "mask": "orchard_mask.png"}
-]
-```
-
-Then run:
-
-```bash
-python3 -m sentinel evaluate-segmentation labels/manifest.json --out output/segmentation-evaluation
-```
-
-The report contains per-class precision, recall, IoU, pixel accuracy, and a confusion matrix. It does not claim results until real labeled imagery is provided.
-
-## Architecture
-
-```text
-Aerial image / XYZ / PLY
-        |
-semantic labels + measured terrain evidence
-        |
-traversability cost map -> A* route -> browser rover playback
-        |
-native C++ step/slope feasibility mask for measured elevation grids
-```
-
-## Verification
+## Verify the project
 
 ```bash
 make test
 make field
 ```
 
-`make test` runs Python and browser-logic tests. `make field` rebuilds the local browser artifact and checks its inline JavaScript. GitHub Actions repeats these checks on macOS.
+## Limits
 
-## Honest boundaries
-
-- The aerial model predicts **2D semantic classes**. It does not estimate surveyed elevation, vehicle clearance, or a safe real-world route.
-- The browser rover is a visual playback of the planned route; it does not control a physical robot.
-- The point-cloud path handles local files. No physical LiDAR, GPS/IMU fusion, SLAM, edge deployment, or real-robot validation is claimed.
-
-## Portfolio summary
-
-Built ATLAS, a Mac-native terrain-perception and rover-route-planning prototype using Python, PyTorch, FastAPI, JavaScript, Open3D, SQLite, C++, and A* planning. The project translates aerial semantic classes and point-cloud evidence into a conservative traversability map and plans candidate rover routes through observed space.
+- The drones and rover are browser simulations.
+- A planned route is a candidate route for demonstration, not a safe route for a real robot.
+- Imported point clouds are local files; ATLAS does not connect to live sensors.
