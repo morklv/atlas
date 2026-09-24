@@ -18,7 +18,7 @@ test('simulated scans reveal cells gradually without exposing full terrain early
   const n=32,truth=Float64Array.from({length:n*n},(_,i)=>i%n>16?2:0);
   const events=F.simulateSurvey(truth,n,.5);
   assert.ok(events.length>9);
-  assert.deepEqual(new Set(events.map(e=>e.drone)),new Set([0,1,2]));
+  assert.deepEqual(new Set(events.map(e=>e.drone)),new Set([0,1,2,3,4,5]));
   const count=e=>e.known.reduce((a,b)=>a+b,0);
   assert.ok(count(events[0])>0);
   assert.ok(count(events[0])<n*n/2);
