@@ -87,19 +87,19 @@ function headingFor(id){let prior=homes[id],latest=homes[id];for(let i=0;i<=inde
 function projectedHeading(project,position,altitude,id){const target=nextWaypoint(id);if(!target)return headingFor(id);const a=project((position[0]+.5)*r,(position[1]+.5)*r,altitude),b=project((target[0]+.5)*r,(target[1]+.5)*r,altitude);return Math.atan2(b[1]-a[1],b[0]-a[0]);}
 function worldHeading(id,position){const target=nextWaypoint(id);return target?Math.atan2(target[1]-position[1],target[0]-position[0]):headingFor(id);}
 function droneMesh(ctx,project,position,altitude,yaw,id){
-  const c=Math.cos(yaw),s=Math.sin(yaw),point=(forward,lateral,z=0)=>project((position[0]+.5)*r+forward*c-lateral*s,(position[1]+.5)*r+forward*s+lateral*c,altitude+z);
-  const nose=point(1.3,0,.09),tail=point(-1.02,0,.08),leftTip=point(-.22,1.05,0),rightTip=point(-.22,-1.05,0),leftRoot=point(.22,.2,.06),rightRoot=point(.22,-.2,.06),bodyTop=point(.24,0,.3),bodyTail=point(-.65,0,.2),bottom=point(.12,0,-.16),leftFin=point(-.72,.33,.3),rightFin=point(-.72,-.33,.3);
-  polygon(ctx,[tail,leftTip,leftRoot,bodyTop,bodyTail],'#34483f','#080d0d');
-  polygon(ctx,[tail,rightTip,rightRoot,bodyTop,bodyTail],'#25352f','#080d0d');
-  polygon(ctx,[nose,leftRoot,bodyTop,rightRoot],'#52685b','#080d0d');
-  polygon(ctx,[nose,rightRoot,bottom,leftRoot],'#35483f','#080d0d');
-  polygon(ctx,[bodyTail,leftFin,tail],'#40564a','#080d0d');polygon(ctx,[bodyTail,rightFin,tail],'#27392f','#080d0d');
-  const sensor=point(.48,0,-.18);ctx.fillStyle='#101615';ctx.beginPath();ctx.arc(sensor[0],sensor[1],2.5,0,Math.PI*2);ctx.fill();
-  // Four rotor hubs with continuously rotating blades make the survey platform read as a compact multirotor.
-  const spin=performance.now()/65+id*.79,rotors=[[.24,.78],[.24,-.78],[-.58,.68],[-.58,-.68]];
-  for(const [forward,lateral] of rotors){const hub=point(forward,lateral,.16),a=point(forward+.31*Math.cos(spin),lateral+.31*Math.sin(spin),.16),b=point(forward-.31*Math.cos(spin),lateral-.31*Math.sin(spin),.16),c2=point(forward+.31*Math.cos(spin+Math.PI/2),lateral+.31*Math.sin(spin+Math.PI/2),.16),d=point(forward-.31*Math.cos(spin+Math.PI/2),lateral-.31*Math.sin(spin+Math.PI/2),.16);line(ctx,[a,b],'#c2d4c9',.7);line(ctx,[c2,d],'#c2d4c9',.7);ctx.fillStyle='#17231e';ctx.beginPath();ctx.arc(hub[0],hub[1],1.6,0,Math.PI*2);ctx.fill();}
-  const markerTip=point(.42,0,.96),markerLeft=point(-.2,.22,.96),markerTail=point(-.03,0,.96),markerRight=point(-.2,-.22,.96);polygon(ctx,[markerTip,markerLeft,markerTail,markerRight],'#b9d0c2','#4d655a');
-  ctx.fillStyle='#e4e8e6';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),nose[0]+6,nose[1]-5);
+  // Original tactical helicopter silhouette: compact armored cabin, tail boom, skids and two animated rotors.
+  const scale=1.25,c=Math.cos(yaw),s=Math.sin(yaw),point=(forward,lateral,z=0)=>project((position[0]+.5)*r+forward*scale*c-lateral*scale*s,(position[1]+.5)*r+forward*scale*s+lateral*scale*c,altitude+z*scale);
+  const nose=point(.86,0,.17),cabinTop=point(.14,0,.5),cabinTail=point(-.62,0,.32),belly=point(.05,0,-.2),leftCabin=point(.08,.42,.18),rightCabin=point(.08,-.42,.18),tailBase=point(-.72,0,.24),tailEnd=point(-1.7,0,.3),leftSkidA=point(.43,.45,-.4),leftSkidB=point(-.55,.45,-.4),rightSkidA=point(.43,-.45,-.4),rightSkidB=point(-.55,-.45,-.4);
+  polygon(ctx,[nose,leftCabin,cabinTop,cabinTail,tailBase,belly],'#40564a','#080d0d');
+  polygon(ctx,[nose,belly,tailBase,cabinTail,rightCabin],'#26382f','#080d0d');
+  polygon(ctx,[nose,rightCabin,cabinTop,leftCabin],'#647a6c','#080d0d');
+  line(ctx,[tailBase,tailEnd],'#344b40',3);line(ctx,[tailBase,tailEnd],'#0c1612',1);
+  line(ctx,[leftSkidA,leftSkidB],'#b6c8bc',1.1);line(ctx,[rightSkidA,rightSkidB],'#b6c8bc',1.1);line(ctx,[leftSkidA,rightSkidA],'#6f8779',.8);line(ctx,[leftSkidB,rightSkidB],'#6f8779',.8);
+  const spin=performance.now()/58+id*.83,hub=point(-.05,0,.72),blade=(angle,length)=>point(-.05+Math.cos(angle)*length,Math.sin(angle)*length,.72);
+  line(ctx,[blade(spin,1.18),blade(spin+Math.PI,1.18)],'#d0ddd3',1.15);line(ctx,[blade(spin+Math.PI/2,1.18),blade(spin+Math.PI*1.5,1.18)],'#d0ddd3',1.15);ctx.fillStyle='#1a2a22';ctx.beginPath();ctx.arc(hub[0],hub[1],2.4,0,Math.PI*2);ctx.fill();
+  const tailHub=point(-1.66,0,.32),tailA=point(-1.66,.28*Math.cos(spin*1.7),.32+.28*Math.sin(spin*1.7)),tailB=point(-1.66,-.28*Math.cos(spin*1.7),.32-.28*Math.sin(spin*1.7));line(ctx,[tailA,tailB],'#c2d4c9',.8);ctx.fillStyle='#17231e';ctx.beginPath();ctx.arc(tailHub[0],tailHub[1],1.5,0,Math.PI*2);ctx.fill();
+  const markerTip=point(.48,0,1.03),markerLeft=point(-.18,.2,1.03),markerTail=point(-.02,0,1.03),markerRight=point(-.18,-.2,1.03);polygon(ctx,[markerTip,markerLeft,markerTail,markerRight],'#b9d0c2','#4d655a');
+  ctx.fillStyle='#e4e8e6';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),nose[0]+7,nose[1]-6);
 }
 function drones(){const out=homes.map(v=>v.slice());for(let i=0;i<=index;i++){const e=events[i];if(e.drone>=0)out[e.drone]=[e.x,e.y];}const next=playing?events[index+1]:null;if(next&&next.drone>=0){const v=out[next.drone],t=Math.max(0,Math.min(1,(performance.now()-lastStepAt)/stepDuration)),f=t*t*(3-2*t);out[next.drone]=[v[0]+(next.x-v[0])*f,v[1]+(next.y-v[1])*f]}return out;}
 function routeHistory(id){const history=[homes[id]];for(let i=0;i<=index;i++)if(events[i].drone===id)history.push([events[i].x,events[i].y]);return history;}
