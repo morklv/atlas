@@ -1,22 +1,22 @@
 # ATLAS
 
-ATLAS is a local browser demo for exploring terrain and planning a candidate rover route.
+ATLAS is a local app for looking at terrain and finding a possible rover route.
 
-It runs on your computer. It is not a hosted website and it does not control a real vehicle.
+It runs on your computer. It does not control real drones or a real rover.
 
-## What works
+## What it can do
 
-- A browser workspace with a terrain map and 3D view.
-- A simulated six-drone survey that progressively reveals the terrain map.
-- A* route planning between two selected points.
-- A route-corridor review that highlights uncertain areas and replans the candidate route.
-- Import of local XYZ, CSV, TXT, or ASCII PLY point clouds for terrain review.
-- Export of the planned route and occupancy grid as JSON.
-- Automated Python and browser-logic tests on GitHub Actions.
+- Show a terrain map and a 3D view.
+- Show six simulated drones scanning the map.
+- Let you choose a start and end point.
+- Find a route with the A* pathfinding algorithm.
+- Highlight unclear parts of a route and check them again.
+- Open local point-cloud files: XYZ, CSV, TXT, and ASCII PLY.
+- Download the route as a JSON file.
 
-## Run locally
+## Start the app on Mac or Linux
 
-### macOS or Linux
+In Terminal, run:
 
 ```bash
 python3 -m venv .venv
@@ -25,9 +25,11 @@ bash run.sh swarm --out output/swarm
 bash run.sh field-server --port 8767
 ```
 
-Then open [http://127.0.0.1:8767](http://127.0.0.1:8767) in a browser.
+Then open [http://127.0.0.1:8767](http://127.0.0.1:8767) in Safari.
 
-### Windows PowerShell
+## Start the app on Windows
+
+In PowerShell, run:
 
 ```powershell
 py -m venv .venv
@@ -38,26 +40,26 @@ py -m venv .venv
 
 Then open [http://127.0.0.1:8767](http://127.0.0.1:8767).
 
-## Optional aerial-image analysis
+## Optional: use an aerial image
 
-ATLAS can run a pretrained local image-segmentation model after the optional model setup:
+To analyse an aerial image with a pretrained model, run:
 
 ```bash
 .venv/bin/python -m pip install -e ".[vision]"
 .venv/bin/python scripts/fetch_aerial_model.py
 ```
 
-The model predicts 2D terrain classes from an aerial image. The displayed terrain relief and drone survey remain illustrative; an uploaded image does not provide measured elevation or real-world route clearance.
+The model can label parts of an image, such as roads, trees, water, and buildings. It does not measure real height or prove that a route is safe.
 
-## Verify the project
+## Check the code
 
 ```bash
 make test
 make field
 ```
 
-## Limits
+## Important limits
 
-- The drones and rover are browser simulations.
-- A planned route is a candidate route for demonstration, not a safe route for a real robot.
-- Imported point clouds are local files; ATLAS does not connect to live sensors.
+- The drones and rover are visual simulations.
+- The route is a demo result. Do not use it to drive a real rover.
+- Point clouds come from files you add. ATLAS does not connect to live sensors.
