@@ -21,33 +21,24 @@ function imageTerrain(image,n=64,amplitude=4){
   }
   return smooth;
 }
-function simulateSurvey(truth,n,resolution=.5,droneCount=3){
+function simulateSurvey(truth,n,resolution=.5,droneCount=4){
   if(truth.length!==n*n||!Number.isFinite(resolution)||resolution<=0)throw Error('Terrain and grid dimensions disagree.');
   if(!Number.isInteger(droneCount)||droneCount<1||droneCount>8)throw Error('Use between one and eight simulated observers.');
-  const steps=Array.from({length:droneCount},()=>[]),columns=Array(droneCount).fill(0),stride=7,radius=4;
-  // Assign contiguous patrol sectors. Each drone flies a boustrophedon pattern
-  // inside its own sector, avoiding redundant crossings over another drone's scan.
-  for(let x=radius;x<n;x+=stride){
-    const drone=Math.min(droneCount-1,Math.floor(x*droneCount/n));
-    const column=[];for(let y=radius;y<n;y+=stride)column.push([x,y]);
-    if(columns[drone]++%2)column.reverse();
-    steps[drone].push(...column);
-  }
+  // Four parallel lanes give the playback and the evidence map the same geometry:
+  // all units advance as one front while their range footprints cover adjacent swaths.
+  const margin=Math.max(4,Math.floor(n*.05)),radius=Math.max(4,Math.ceil((n-margin*2)/(droneCount*2))),stride=Math.max(5,radius),lanes=Array.from({length:droneCount},(_,id)=>margin+(id+.5)/droneCount*(n-margin*2)),rows=[];
+  for(let y=margin;y<n-margin;y+=stride)rows.push(y);if(rows.at(-1)!==n-margin-1)rows.push(n-margin-1);
   const height=new Float64Array(n*n).fill(NaN),known=new Uint8Array(n*n),count=new Uint8Array(n*n),events=[];
-  const longest=Math.max(...steps.map(a=>a.length));
-  for(let turn=0;turn<longest;turn++)for(let drone=0;drone<droneCount;drone++){
-    const site=steps[drone][turn];if(!site)continue;
-    let returns=0,newCells=0;
+  for(let turn=0;turn<rows.length;turn++)for(let drone=0;drone<droneCount;drone++){
+    const site=[lanes[drone],rows[turn]];let returns=0,newCells=0;
     for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
-      const x=site[0]+dx,y=site[1]+dy;if(x<0||y<0||x>=n||y>=n||dx*dx+dy*dy>(radius+.7)**2)continue;
-      const i=y*n+x;if((i*7+turn*13+drone*11)%43===0)continue; // synthetic dropout
+      const x=Math.round(site[0])+dx,y=Math.round(site[1])+dy;if(x<0||y<0||x>=n||y>=n||dx*dx+dy*dy>(radius+.7)**2)continue;
+      const i=y*n+x;if((i*7+turn*13+drone*11)%43===0)continue;
       const noisy=truth[i]+.035*Math.sin(i*1.31+turn*2.07+drone);
       height[i]=count[i]?(height[i]*count[i]+noisy)/(count[i]+1):noisy;
-      if(!count[i]){known[i]=1;newCells++;}
-      count[i]=Math.min(255,count[i]+1);returns++;
+      if(!count[i]){known[i]=1;newCells++;}count[i]=Math.min(255,count[i]+1);returns++;
     }
-    events.push({drone,x:site[0],y:site[1],returns,newCells,
-      height:Float64Array.from(height),known:Uint8Array.from(known)});
+    events.push({drone,x:site[0],y:site[1],returns,newCells,height:Float64Array.from(height),known:Uint8Array.from(known)});
   }
   return events;
 }
