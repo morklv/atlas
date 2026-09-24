@@ -89,12 +89,15 @@ function worldHeading(id,position){const target=nextWaypoint(id);return target?M
 function droneMesh(ctx,project,position,altitude,yaw,id){
   const c=Math.cos(yaw),s=Math.sin(yaw),point=(forward,lateral,z=0)=>project((position[0]+.5)*r+forward*c-lateral*s,(position[1]+.5)*r+forward*s+lateral*c,altitude+z);
   const nose=point(1.3,0,.09),tail=point(-1.02,0,.08),leftTip=point(-.22,1.05,0),rightTip=point(-.22,-1.05,0),leftRoot=point(.22,.2,.06),rightRoot=point(.22,-.2,.06),bodyTop=point(.24,0,.3),bodyTail=point(-.65,0,.2),bottom=point(.12,0,-.16),leftFin=point(-.72,.33,.3),rightFin=point(-.72,-.33,.3);
-  polygon(ctx,[tail,leftTip,leftRoot,bodyTop,bodyTail],'#1d2524','#080d0d');
-  polygon(ctx,[tail,rightTip,rightRoot,bodyTop,bodyTail],'#141b1a','#080d0d');
-  polygon(ctx,[nose,leftRoot,bodyTop,rightRoot],'#323c3a','#080d0d');
-  polygon(ctx,[nose,rightRoot,bottom,leftRoot],'#242d2c','#080d0d');
-  polygon(ctx,[bodyTail,leftFin,tail],'#2b3533','#080d0d');polygon(ctx,[bodyTail,rightFin,tail],'#161e1d','#080d0d');
+  polygon(ctx,[tail,leftTip,leftRoot,bodyTop,bodyTail],'#34483f','#080d0d');
+  polygon(ctx,[tail,rightTip,rightRoot,bodyTop,bodyTail],'#25352f','#080d0d');
+  polygon(ctx,[nose,leftRoot,bodyTop,rightRoot],'#52685b','#080d0d');
+  polygon(ctx,[nose,rightRoot,bottom,leftRoot],'#35483f','#080d0d');
+  polygon(ctx,[bodyTail,leftFin,tail],'#40564a','#080d0d');polygon(ctx,[bodyTail,rightFin,tail],'#27392f','#080d0d');
   const sensor=point(.48,0,-.18);ctx.fillStyle='#101615';ctx.beginPath();ctx.arc(sensor[0],sensor[1],2.5,0,Math.PI*2);ctx.fill();
+  // Four rotor hubs with continuously rotating blades make the survey platform read as a compact multirotor.
+  const spin=performance.now()/65+id*.79,rotors=[[.24,.78],[.24,-.78],[-.58,.68],[-.58,-.68]];
+  for(const [forward,lateral] of rotors){const hub=point(forward,lateral,.16),a=point(forward+.31*Math.cos(spin),lateral+.31*Math.sin(spin),.16),b=point(forward-.31*Math.cos(spin),lateral-.31*Math.sin(spin),.16),c2=point(forward+.31*Math.cos(spin+Math.PI/2),lateral+.31*Math.sin(spin+Math.PI/2),.16),d=point(forward-.31*Math.cos(spin+Math.PI/2),lateral-.31*Math.sin(spin+Math.PI/2),.16);line(ctx,[a,b],'#c2d4c9',.7);line(ctx,[c2,d],'#c2d4c9',.7);ctx.fillStyle='#17231e';ctx.beginPath();ctx.arc(hub[0],hub[1],1.6,0,Math.PI*2);ctx.fill();}
   const markerTip=point(.42,0,.96),markerLeft=point(-.2,.22,.96),markerTail=point(-.03,0,.96),markerRight=point(-.2,-.22,.96);polygon(ctx,[markerTip,markerLeft,markerTail,markerRight],'#b9d0c2','#4d655a');
   ctx.fillStyle='#e4e8e6';ctx.font='10px ui-monospace,monospace';ctx.textAlign='left';ctx.fillText('0'+(id+1),nose[0]+6,nose[1]-5);
 }
@@ -115,7 +118,7 @@ function inspectionView(now=performance.now()){
 function animateInspection(now){
   const review=inspectionView(now);if(!review){inspectionFrame=null;return}
   drawScene();drawMap();
-  if(review.t>=1){inspectionFrame=null;inspection.reviewed=new Set(inspection.tasks.map((_,i)=>i));inspectionFlight=null;plan();$('field-tail').textContent='ROUTE CORRIDOR REVIEW / COMPLETE';setStatus('Route corridor review complete',inspection.assignments.join(' · ')+' · highlighted zones received local traversability analysis and the route was replanned. Image terrain remains a model prediction, not a physical sensor update.');update();return}
+  if(review.t>=1){inspectionFrame=null;inspection.reviewed=new Set(inspection.tasks.map((_,i)=>i));inspectionFlight=null;(async()=>{let refined=false;try{refined=await refineImageInspection()}catch(error){setStatus('Regional image refinement unavailable',error.message)}plan();$('field-tail').textContent='ROUTE CORRIDOR REVIEW / COMPLETE';setStatus('Route corridor review complete',inspection.assignments.join(' · ')+(refined?' · local image regions were re-evaluated at higher detail and the route was replanned.':' · highlighted zones received local traversability analysis and the route was replanned.')+' Predictions are not physical sensor measurements.');update();})();return}
   inspectionFrame=requestAnimationFrame(animateInspection);
 }
 function startInspectionFlight(assignments){
@@ -166,6 +169,22 @@ function stop(){playing=false;if(timer){clearInterval(timer);timer=null}if(scanF
 function clearRoute(){stopRover();stopInspectionFlight();route=null;costmap=null;inspection=null;lastError='';$('export').disabled=true;$('inspect').disabled=true;$('drive').disabled=true;$('route-len').textContent='—';$('top-route').textContent='—';$('expanded').textContent='—';}
 function setIndex(i){index=Math.max(-1,Math.min(events.length-1,i));if(mode!=='points')clearRoute();if(mode==='points'){if(index>=0)setStatus('Measured-cloud review in progress','The animation indexes imported evidence only. It does not create measurements or alter the point cloud.');else setStatus('Measured cloud ready','Run the tactical review to visualize coverage of the imported evidence.');}else if(index===events.length-1&&start&&goal)plan();else if(index===events.length-1&&mode==='photo')setStatus('Survey complete','Select a start and destination on traversable predicted terrain, then plan a candidate route.');else if(index>=0)setStatus('Survey in progress','You can inspect partial evidence. Routes through unknown cells are rejected.');else setStatus('Survey required','Run the simulated survey, then plan using measured cells.');update();}
 function plan(){try{const g=grid();if(!g)throw Error('Run the survey first.');if(!start||!goal)throw Error('Select a start and destination on the map.');let routeGrid=g;if(mode==='photo'){routeGrid={...g,height:F.semanticTerrain(semantic,n,Number($('amplitude').value)),known:new Uint8Array(n*n).fill(1),roughness:new Float64Array(n*n)};costmap=A.imageRoadCostmap(routeGrid,{roadBufferCells:1});start=A.nearestPassable(costmap,[...start,0]).point.slice(0,2);goal=A.nearestPassable(costmap,[...goal,0]).point.slice(0,2);}else costmap=A.groundCostmap(g,{radius:Number($('radius').value),maxHeight:Number($('max-height').value),maxStep:Number($('step').value),maxSlope:Number($('slope').value)});route=A.astar(costmap,[...start,0],[...goal,0],routeGrid);$('route-len').textContent=route.length.toFixed(1)+' m';$('top-route').textContent=route.length.toFixed(1)+' m';$('expanded').textContent=route.visited.toLocaleString();$('export').disabled=false;$('inspect').disabled=mode==='points';$('drive').disabled=false;setStatus('Candidate route found',mode==='photo'?route.length.toFixed(1)+' m using predicted roads first, then open ground where needed. Forest, water, and buildings remain blocked.':route.length.toFixed(1)+' m through measured cells under the selected cost and movement limits. Not field-certified.');lastError='';}catch(err){clearRoute();lastError=err.message;setStatus('No route',err.message)}update();}
+function inspectionMetrics(g,tasks){return tasks.map(task=>{let clear=0,observed=0;for(const i of task.cells){const evidence=cellEvidence(g,i);if(evidence.confidence>0){observed++;if(!evidence.reason.startsWith('BLOCKED'))clear++;}}return{clear:observed?Math.round(clear/observed*100):0,observed};});}
+async function refineImageInspection(){
+  if(mode!=='photo'||!photoImage||location.protocol==='file:')return false;
+  let refined=false;
+  for(let taskIndex=0;taskIndex<inspection.tasks.length;taskIndex++){
+    const task=inspection.tasks[taskIndex],xs=task.cells.map(i=>i%n),ys=task.cells.map(i=>Math.floor(i/n)),minX=Math.max(0,Math.min(...xs)-2),maxX=Math.min(n-1,Math.max(...xs)+2),minY=Math.max(0,Math.min(...ys)-2),maxY=Math.min(n-1,Math.max(...ys)+2),canvas=document.createElement('canvas');canvas.width=512;canvas.height=512;
+    const sx=minX/n*photoImage.naturalWidth,sy=(n-1-maxY)/n*photoImage.naturalHeight,sw=(maxX-minX+1)/n*photoImage.naturalWidth,sh=(maxY-minY+1)/n*photoImage.naturalHeight;
+    const ctx=canvas.getContext('2d');ctx.drawImage(photoImage,sx,sy,sw,sh,0,0,512,512);
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)continue;
+    setStatus('Refining inspection '+(taskIndex+1)+' / '+inspection.tasks.length,'The local terrain model is re-evaluating this selected image region at higher pixel density.');
+    const body=new FormData();body.append('file',blob,'inspection.png');const response=await fetch('/api/segment',{method:'POST',body}),result=await response.json();if(!response.ok)throw Error(result.detail||'Regional image analysis failed.');
+    for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){const u=Math.min(127,Math.floor((x-minX)/(maxX-minX+1)*128)),v=Math.min(127,Math.floor((y-minY)/(maxY-minY+1)*128));semantic[y*n+x]=result.labels[v*128+u];}
+    refined=true;inspection.refined?.add(taskIndex);inspection.metrics=inspectionMetrics(grid(),inspection.tasks);update();
+  }
+  return refined;
+}
 function requestInspection(){
   if(!route||!grid())return;
   const g=grid(),candidates=[];
@@ -193,8 +212,8 @@ function requestInspection(){
     available.delete(best);return'U'+String(best+1).padStart(2,'0')+'→I'+(k+1);
   });
   const flightAssignments=assignments.map((label,task)=>({label,task,drone:Number(label.slice(1,3))-1}));
-  const metrics=tasks.map(task=>{let clear=0,observed=0;for(const i of task.cells){const evidence=cellEvidence(g,i);if(evidence.confidence>0){observed++;if(!evidence.reason.startsWith('BLOCKED'))clear++;}}return{clear:observed?Math.round(clear/observed*100):0,observed};});
-  inspection={tasks,cells,newCells,assignments,metrics,reviewed:new Set()};
+  const metrics=inspectionMetrics(g,tasks);
+  inspection={tasks,cells,newCells,assignments,metrics,reviewed:new Set(),refined:new Set()};
   $('field-tail').textContent='ROUTE CORRIDOR REVIEW / '+tasks.length+' TASKS';
   setStatus('Route corridor review launched',assignments.join(' · ')+' · drones are moving to the highlighted zones. Each zone is marked reviewed after its scan pass.');
   startInspectionFlight(flightAssignments);
@@ -225,6 +244,6 @@ map.onclick=e=>{if(!mapBox)return;const b=map.getBoundingClientRect(),x=Math.flo
 map.onpointermove=e=>{if(!mapBox)return;const b=map.getBoundingClientRect(),x=Math.floor((e.clientX-b.left-mapBox.ox)/mapBox.side*n),y=Math.floor((1-(e.clientY-b.top-mapBox.oy)/mapBox.side)*n);if(x<0||y<0||x>=n||y>=n){$('map-readout').textContent='HOVER FOR CELL EVIDENCE';return}const g=grid(),i=y*n+x,evidence=cellEvidence(g,i),z=g&&g.known[i]&&Number.isFinite(g.height[i])?'Z '+g.height[i].toFixed(2)+' M':'NO LIDAR';$('map-readout').textContent=((x+.5)*r).toFixed(1)+' E / '+((y+.5)*r).toFixed(1)+' N · '+z+' · '+evidence.reason+' · '+Math.round(evidence.confidence*100)+'% CONF.';};map.onpointerleave=()=>$('map-readout').textContent='HOVER FOR CELL EVIDENCE';
 scene.onpointerdown=e=>{drag={x:e.clientX,orbit};scene.setPointerCapture(e.pointerId)};scene.onpointermove=e=>{if(drag){orbit=drag.orbit+(e.clientX-drag.x)*.008;drawScene()}};scene.onpointerup=()=>drag=null;scene.onpointercancel=()=>drag=null;scene.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(.65,Math.min(2.4,zoom*(e.deltaY<0?1.12:.89)));drawScene()},{passive:false});window.onresize=update;
 window.FieldWorkspace={state:()=>({mode,index,count:events.length,routeLength:route?.length||null,coverage:grid()?grid().known.reduce((a,b)=>a+b,0)/(n*n):0}),seek:i=>{stop();setIndex(i)},plan,loadDemo};
-loadDemo();function animate(){if(playing)drawScene();requestAnimationFrame(animate)}requestAnimationFrame(animate);
+loadDemo();let rotorFrameAt=0;function animate(now){if(now-rotorFrameAt>70){rotorFrameAt=now;drawScene()}requestAnimationFrame(animate)}requestAnimationFrame(animate);
 })();
 </script></body></html>
