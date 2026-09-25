@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import shutil
+import sys
 import subprocess
 import tempfile
 from typing import Any
@@ -30,6 +31,22 @@ def build(output: Path) -> Path:
         text=True,
         capture_output=True,
     )
+    # Some macOS installations pair a newer SDK with an older TAPI linker.
+    # Retry only this SDK compatibility error, using another installed SDK.
+    if (completed.returncode and sys.platform == "darwin"
+            and "tapi error: malformed file" in completed.stderr
+            and "unknown architecture" in completed.stderr):
+        sdk_root = Path("/Library/Developer/CommandLineTools/SDKs")
+        for sdk in sorted(sdk_root.glob("MacOSX*.sdk")):
+            if sdk.is_symlink():
+                continue
+            retry = subprocess.run(
+                [tool, "-O3", "-std=c++17", "-isysroot", str(sdk), str(SOURCE), "-o", str(output)],
+                text=True, capture_output=True,
+            )
+            if retry.returncode == 0:
+                completed = retry
+                break
     if completed.returncode:
         detail = completed.stderr.strip().splitlines()[-1] if completed.stderr.strip() else "unknown compiler error"
         raise RuntimeError(

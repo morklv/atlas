@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "atlas-inspection"
 version = "0.1.0"
-description = "Reproducible single-drone active inspection in a lightweight depth-sensor simulation"
+description = "Local terrain perception and candidate rover route planning with pretrained segmentation and point clouds"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24,<3", "Pillow>=10,<13"]
 
