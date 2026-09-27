@@ -12,18 +12,11 @@ candidate rover route around predicted obstacles.
 ## What happens in the browser demo
 
 1. You upload an aerial image.
-2. A pretrained Mask2Former model runs locally through PyTorch and predicts road,
-   open ground, vegetation, forest, water, and building classes.
-3. ATLAS turns the predictions into a grid. Roads are preferred, open ground has
-   a higher cost, and predicted buildings, water, and dense forest are blocked.
-4. The survey animation gradually reveals this grid.
-5. You choose a start and destination. A* searches the grid and draws a candidate route.
-6. Route inspection can run the model again on selected image regions and then replan.
-7. A rover animation plays back the calculated route.
+2. A pretrained PyTorch model identifies terrain and creates a map of preferred and blocked areas.
+3. The survey animation gradually reveals the map.
+4. You choose two points. A* finds a candidate route, route inspection can check selected regions again, and the rover animation plays the route.
 
-The aircraft animation represents a survey. It does not collect physical measurements.
-
-## Start the app on Mac or Linux
+## Start the app on Mac
 
 In Terminal, run:
 
@@ -35,19 +28,6 @@ bash run.sh field-server --port 8767
 ```
 
 Then open [http://127.0.0.1:8767](http://127.0.0.1:8767) in Safari.
-
-## Start the app on Windows
-
-In PowerShell, run:
-
-```powershell
-py -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[field]"
-.\.venv\Scripts\python.exe -m sentinel swarm --out output/swarm
-.\.venv\Scripts\python.exe -m sentinel field-server --port 8767
-```
-
-Then open [http://127.0.0.1:8767](http://127.0.0.1:8767).
 
 ## Optional: use an aerial image
 
@@ -81,21 +61,6 @@ make field
 - **NumPy** stores elevation, semantic, and traversability grids.
 - **GitHub Actions** runs the automated Python, JavaScript, and C++ checks.
 
-The repository also contains separately tested command-line components: **Open3D**
-point-cloud processing, **SQLite** experiment records, and a **C++17** elevation-grid
-step/slope analyzer. The browser does not call these three components during its normal
-image-upload workflow.
-
-## Important limits
-
-- The aircraft and rover are visual simulations.
-- The route is a demo result. Do not use it to drive a real rover.
-- Point clouds come from files you add. ATLAS does not connect to live sensors.
-- The pretrained model was integrated, not trained or fine-tuned in this project.
-- Model accuracy has not been established on a custom outdoor dataset.
-
-## Presenting ATLAS
-
-Suggested description: “Integrated local pretrained PyTorch semantic segmentation into a terrain-analysis and A* route-planning workflow.”
-
-See [the demo steps](docs/DEMO.md) and [verification details](docs/VERIFICATION.md). Open3D processing, SQLite experiment records, and the C++ terrain tool are separate command-line components; uploading points in the browser uses the JavaScript importer.
+Other tested command-line tools in the repository use **Open3D** for point-cloud
+processing, **SQLite** for experiment records, and **C++17** for elevation-grid
+step and slope checks. They run separately from the browser demo.
