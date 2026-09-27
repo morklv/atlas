@@ -24,16 +24,15 @@ function imageTerrain(image,n=64,amplitude=4){
 function simulateSurvey(truth,n,resolution=.5,droneCount=6){
   if(truth.length!==n*n||!Number.isFinite(resolution)||resolution<=0)throw Error('Terrain and grid dimensions disagree.');
   if(!Number.isInteger(droneCount)||droneCount<1||droneCount>8)throw Error('Use between one and eight simulated observers.');
-  // Four parallel lanes give the playback and the evidence map the same geometry:
-  // all units advance as one front while their range footprints cover adjacent swaths.
-  const margin=Math.max(4,Math.floor(n*.05)),radius=Math.max(4,Math.ceil((n-margin*2)/(droneCount*1.65))),stride=Math.max(5,radius),lanes=Array.from({length:droneCount},(_,id)=>margin+(id+.5)/droneCount*(n-margin*2)),rows=[];
-  for(let y=margin;y<n-margin;y+=stride)rows.push(y);if(rows.at(-1)!==n-margin-1)rows.push(n-margin-1);
+  // Contiguous swaths tile the entire image, including its perimeter. These
+  // synthetic samples visualize existing image predictions, not new measurements.
+  const stride=Math.max(1,Math.ceil(n/32)),lanes=Array.from({length:droneCount},(_,id)=>(id+.5)*n/droneCount-.5),rows=[];
+  for(let y=0;y<n;y+=stride)rows.push(y);
   const height=new Float64Array(n*n).fill(NaN),known=new Uint8Array(n*n),count=new Uint8Array(n*n),events=[];
   for(let turn=0;turn<rows.length;turn++)for(let drone=0;drone<droneCount;drone++){
-    const site=[lanes[drone],rows[turn]];let returns=0,newCells=0;
-    for(let dy=-radius;dy<=radius;dy++)for(let dx=-radius;dx<=radius;dx++){
-      const x=Math.round(site[0])+dx,y=Math.round(site[1])+dy;if(x<0||y<0||x>=n||y>=n||dx*dx+dy*dy>(radius+.7)**2)continue;
-      const i=y*n+x;if((i*7+turn*13+drone*11)%43===0)continue;
+    const site=[lanes[drone],Math.min(n-1,rows[turn]+stride-1)];let returns=0,newCells=0;
+    for(let y=rows[turn];y<Math.min(n,rows[turn]+stride);y++)for(let x=Math.floor(drone*n/droneCount);x<Math.floor((drone+1)*n/droneCount);x++){
+      const i=y*n+x;if(!Number.isFinite(truth[i]))continue;
       const noisy=truth[i]+.035*Math.sin(i*1.31+turn*2.07+drone);
       height[i]=count[i]?(height[i]*count[i]+noisy)/(count[i]+1):noisy;
       if(!count[i]){known[i]=1;newCells++;}count[i]=Math.min(255,count[i]+1);returns++;

@@ -16,7 +16,7 @@ aerial-image inference; opening `field.html` as a file will not provide it.
 1. Upload an overhead PNG, JPEG, or WebP image under 10 MB.
 2. Wait for local pretrained semantic segmentation. The map identifies road/track, open
    ground, low vegetation, forest, water, and buildings.
-3. Run the six-drone survey. Each observer contributes to a shared map.
+3. Run the simulated survey. The animation gradually reveals the shared terrain grid.
 4. Set a start and destination on traversable terrain, then plan a route.
 5. Hover route-adjacent cells to inspect source-dependent evidence, heuristic confidence, terrain
    class, slope, and blocked reason.
@@ -37,5 +37,4 @@ make field
 The browser workspace does not command a vehicle, certify a route, or infer
 measured depth from an aerial image.
 
-The default recorded synthetic survey uses three drones; aerial image uploads use six.
 Install the optional vision dependencies and checkpoint using the README before uploading an image.

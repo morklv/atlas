@@ -1,22 +1,27 @@
 # ATLAS
 
-ATLAS is a local app for looking at terrain and finding a possible rover route.
-
-It runs on your computer. It does not control real drones or a real rover.
+ATLAS is a local terrain-perception and route-planning prototype. It uses a pretrained
+PyTorch segmentation model to identify terrain classes in an aerial image, converts
+those predictions into a traversability map, and uses A* search to calculate a
+candidate rover route around predicted obstacles.
 
 ![ATLAS recorded synthetic terrain survey and candidate route](docs/images/atlas-preview.png)
 
-*Recorded synthetic demo: three drones, 95.6% observed coverage, and a candidate route. These are simulation results.*
+*Recorded synthetic terrain survey with a candidate route. This is a simulation result.*
 
-## What it can do
+## What happens in the browser demo
 
-- Show a terrain map and a 3D view.
-- Show six simulated drones surveying an uploaded image, or replay a three-drone synthetic survey.
-- Let you choose a start and end point.
-- Find a route with the A* pathfinding algorithm.
-- Highlight unclear parts of a route and check them again.
-- Open local point-cloud files: XYZ, CSV, TXT, and ASCII PLY.
-- Download the route as a JSON file.
+1. You upload an aerial image.
+2. A pretrained Mask2Former model runs locally through PyTorch and predicts road,
+   open ground, vegetation, forest, water, and building classes.
+3. ATLAS turns the predictions into a grid. Roads are preferred, open ground has
+   a higher cost, and predicted buildings, water, and dense forest are blocked.
+4. The survey animation gradually reveals this grid.
+5. You choose a start and destination. A* searches the grid and draws a candidate route.
+6. Route inspection can run the model again on selected image regions and then replan.
+7. A rover animation plays back the calculated route.
+
+The aircraft animation represents a survey. It does not collect physical measurements.
 
 ## Start the app on Mac or Linux
 
@@ -66,14 +71,31 @@ make test
 make field
 ```
 
+## Technology
+
+- **Python** runs the backend, data processing, command-line tools, and tests.
+- **PyTorch and Mask2Former** run pretrained semantic-segmentation inference locally.
+- **FastAPI** serves the browser app and image-analysis endpoints.
+- **JavaScript and HTML Canvas** provide the terrain view, survey animation, and route interaction.
+- **A\*** searches the traversability grid for a candidate rover route.
+- **NumPy** stores elevation, semantic, and traversability grids.
+- **GitHub Actions** runs the automated Python, JavaScript, and C++ checks.
+
+The repository also contains separately tested command-line components: **Open3D**
+point-cloud processing, **SQLite** experiment records, and a **C++17** elevation-grid
+step/slope analyzer. The browser does not call these three components during its normal
+image-upload workflow.
+
 ## Important limits
 
-- The drones and rover are visual simulations.
+- The aircraft and rover are visual simulations.
 - The route is a demo result. Do not use it to drive a real rover.
 - Point clouds come from files you add. ATLAS does not connect to live sensors.
+- The pretrained model was integrated, not trained or fine-tuned in this project.
+- Model accuracy has not been established on a custom outdoor dataset.
 
 ## Presenting ATLAS
 
-Suggested description: “Integrated local PyTorch semantic segmentation inference into a terrain-analysis and route-planning workflow.”
+Suggested description: “Integrated local pretrained PyTorch semantic segmentation into a terrain-analysis and A* route-planning workflow.”
 
 See [the demo steps](docs/DEMO.md) and [verification details](docs/VERIFICATION.md). Open3D processing, SQLite experiment records, and the C++ terrain tool are separate command-line components; uploading points in the browser uses the JavaScript importer.

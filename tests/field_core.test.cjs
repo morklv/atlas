@@ -34,6 +34,17 @@ test('five simulated observers contribute to one evidence replay',()=>{
   assert.ok(events.at(-1).known.reduce((sum,value)=>sum+value,0)>n*n*.8);
 });
 
+test('survey covers every finite cell and all four edges without filling missing input',()=>{
+  for(const n of [16,32,65,96])for(const drones of [3,6,8]){
+    const truth=new Float64Array(n*n);truth[Math.floor(n*n/2)]=NaN;
+    const events=F.simulateSurvey(truth,n,.5,drones),last=events.at(-1);
+    assert.equal(last.known.reduce((a,b)=>a+b,0),n*n-1);
+    assert.equal(last.known[Math.floor(n*n/2)],0);
+    for(const i of [0,n-1,n*(n-1),n*n-1])assert.equal(last.known[i],1);
+    for(const e of events)for(let y=Math.floor(e.y)+1;y<n;y++)assert.equal(e.known[y*n],0);
+  }
+});
+
 test('simulated evidence enters the same ground route planner',()=>{
   const n=32,truth=new Float64Array(n*n),last=F.simulateSurvey(truth,n,.5).at(-1);
   const grid=F.gridAt(last,n,.5);

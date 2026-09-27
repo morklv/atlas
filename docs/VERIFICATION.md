@@ -30,4 +30,4 @@ The test suite checks software behavior. It does not establish segmentation accu
 
 ## Verified locally on September 25, 2026
 
-All 36 Python tests passed, including both native C++ tests, with no skips. All 16 JavaScript tests passed, and the field artifact generated and passed its syntax check. The recorded browser demo completed and produced a 33.3 m candidate route. This verifies software behavior, not physical route safety.
+All 36 Python tests passed, including both native C++ tests, with no skips. All 17 JavaScript tests passed, and the field artifact generated and passed its syntax check. The recorded browser demo completed and produced a candidate route. This verifies software behavior, not physical route safety or segmentation accuracy.
