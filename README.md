@@ -1,66 +1,53 @@
 # ATLAS
 
-ATLAS is a local terrain-perception and route-planning prototype. It uses a pretrained
-PyTorch segmentation model to identify terrain classes in an aerial image, converts
-those predictions into a traversability map, and uses A* search to calculate a
-candidate rover route around predicted obstacles.
+ATLAS is a local terrain-perception and rover-route planning demo. It analyzes an
+aerial image with Mask2Former and PyTorch, converts the predicted terrain into a
+weighted grid, and uses A* to calculate a route between two selected points.
 
-![ATLAS recorded synthetic terrain survey and candidate route](docs/images/atlas-preview.png)
+![ATLAS terrain analysis and rover route](docs/images/atlas-preview.png)
 
-*Recorded synthetic terrain survey with a candidate route. This is a simulation result.*
+## Demo workflow
 
-## What happens in the browser demo
+1. Upload a PNG, JPEG, or WebP aerial image.
+2. Run local semantic segmentation to create a terrain map.
+3. Play the survey visualization as the map is revealed.
+4. Select a start and destination and calculate an A* route.
+5. Inspect selected route regions, update their predictions, and replan.
+6. Play the rover route in the browser.
 
-1. You upload an aerial image.
-2. A pretrained PyTorch model identifies terrain and creates a map of preferred and blocked areas.
-3. The survey animation gradually reveals the map.
-4. You choose two points. A* finds a candidate route, route inspection can check selected regions again, and the rover animation plays the route.
-
-## Start the app on Mac
-
-In Terminal, run:
+## Run on macOS
 
 ```bash
 python3 -m venv .venv
-.venv/bin/python -m pip install -e ".[field]"
-bash run.sh swarm --out output/swarm
+.venv/bin/python -m pip install -e ".[vision]"
+.venv/bin/python scripts/fetch_aerial_model.py
+make field
 bash run.sh field-server --port 8767
 ```
 
-Then open [http://127.0.0.1:8767](http://127.0.0.1:8767) in Safari.
+Open [http://127.0.0.1:8767](http://127.0.0.1:8767) in Safari.
 
-## Optional: use an aerial image
+## Core technology
 
-To analyse an aerial image with a pretrained model, run:
+- **Python, PyTorch, Transformers, and Mask2Former** for local semantic segmentation
+- **FastAPI and WebSockets** for the local application server and processing status
+- **JavaScript and HTML Canvas** for terrain visualization and route interaction
+- **A\*** and weighted terrain costs for rover-route planning
+- **NumPy and Pillow** for image and grid processing
+- **GitHub Actions** for automated Python and JavaScript checks
 
-```bash
-.venv/bin/python -m pip install -e ".[vision]"
-.venv/bin/python scripts/fetch_aerial_model.py
-```
+## Source code
 
-The model can label parts of an image, such as roads, trees, water, and buildings. It does not measure real height or prove that a route is safe.
+- [`sentinel/field_server.py`](sentinel/field_server.py) — image inference and API
+- [`sentinel/assets/field.html`](sentinel/assets/field.html) — browser interface and workflow
+- [`sentinel/assets/navigation.js`](sentinel/assets/navigation.js) — terrain costs and A* routing
+- [`sentinel/assets/field_core.js`](sentinel/assets/field_core.js) — survey and terrain processing
+- [`sentinel/route_inspection.py`](sentinel/route_inspection.py) — route-region selection
+- [`tests/`](tests/) — backend, terrain, and route-planning checks
 
-The model is the pretrained `mfaytin/mask2former-satellite` Mask2Former checkpoint, run locally with PyTorch. ATLAS integrates inference; it does not train or fine-tune this model. Regional inspection runs inference again on image crops. Accuracy on a custom outdoor dataset has not been established.
-
-## Check the code
-
-Install Node.js to run the browser checks.
+## Verify
 
 ```bash
 make test
 make field
 ```
-
-## Technology
-
-- **Python** runs the backend, data processing, command-line tools, and tests.
-- **PyTorch and Mask2Former** run pretrained semantic-segmentation inference locally.
-- **FastAPI** serves the browser app and image-analysis endpoints.
-- **JavaScript and HTML Canvas** provide the terrain view, survey animation, and route interaction.
-- **A\*** searches the traversability grid for a candidate rover route.
-- **NumPy** stores elevation, semantic, and traversability grids.
-- **GitHub Actions** runs the automated Python, JavaScript, and C++ checks.
-
-Other tested command-line tools in the repository use **Open3D** for point-cloud
-processing, **SQLite** for experiment records, and **C++17** for elevation-grid
-step and slope checks. They run separately from the browser demo.
