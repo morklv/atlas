@@ -118,3 +118,12 @@ test('image endpoint snapping ignores tiny isolated prediction islands',()=>{
   assert.notDeepEqual(snapped.point,[8,8,0]);
   assert.equal(costs.component[snapped.point[1]*n+snapped.point[0]],costs.primaryComponent);
 });
+
+test('regional perception applies crop labels and reports reclassified cells',()=>{
+  const n=4,labels=new Uint8Array(n*n),crop=new Uint8Array(4*4).fill(1);
+  const result=F.applySemanticCrop(labels,n,{minX:1,maxX:2,minY:1,maxY:2},crop,4);
+  assert.deepEqual(result.changed,[5,6,9,10]);
+  assert.equal(result.before[0],4);
+  assert.equal(result.after[1],4);
+  assert.deepEqual([...labels],[0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0]);
+});

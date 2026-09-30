@@ -52,5 +52,20 @@ function semanticTerrain(labels,n,buildingHeight=4){
   // traversability; a single overhead image does not measure canopy or slope.
   return Float64Array.from(labels,v=>v===2?buildingHeight:v===3?2:v===4?.45:v===1?0:.12);
 }
-return{imageTerrain,simulateSurvey,gridAt,semanticTerrain};
+function applySemanticCrop(labels,n,bounds,cropLabels,cropN=128){
+  if(!labels||labels.length!==n*n||!cropLabels||cropLabels.length!==cropN*cropN||!Number.isInteger(cropN)||cropN<1)
+    throw Error('Invalid semantic crop.');
+  const{minX,maxX,minY,maxY}=bounds||{};
+  if(![minX,maxX,minY,maxY].every(Number.isInteger)||minX<0||minY<0||maxX>=n||maxY>=n||minX>maxX||minY>maxY)
+    throw Error('Invalid semantic crop bounds.');
+  const changed=[],before=new Uint32Array(6),after=new Uint32Array(6),width=maxX-minX+1,height=maxY-minY+1;
+  for(let y=minY;y<=maxY;y++)for(let x=minX;x<=maxX;x++){
+    const u=Math.min(cropN-1,Math.floor((x-minX)/width*cropN)),v=Math.min(cropN-1,Math.floor((y-minY)/height*cropN)),i=y*n+x,next=Number(cropLabels[v*cropN+u]);
+    if(labels[i]>=0&&labels[i]<before.length)before[labels[i]]++;
+    if(next>=0&&next<after.length)after[next]++;
+    if(labels[i]!==next){labels[i]=next;changed.push(i);}
+  }
+  return{changed,before:Array.from(before),after:Array.from(after)};
+}
+return{imageTerrain,simulateSurvey,gridAt,semanticTerrain,applySemanticCrop};
 });
